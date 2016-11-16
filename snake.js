@@ -3,7 +3,7 @@ const canvas = document.querySelector('#game-canvas'),
       w = canvas.width = 600,
       h = canvas.height = 405,
       r = 7.5,
-      MOVE_SPEED = 500,
+      MOVE_SPEED = 50,
       INIT_SNAKE_LENGTH = 5
 
 const LEFT_KEY = 97,
@@ -67,6 +67,7 @@ function move (direction) {
 }
 
 function renderSence (actors) {
+  ctx.clearRect(0, 0, w, h)
   renderSnake(actors.snake)
 }
 
