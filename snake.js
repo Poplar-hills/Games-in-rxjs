@@ -58,10 +58,10 @@ const game$ = Rx.Observable.combineLatest(
 
 function move (currDirection) {
   const moveMap = {}
-  moveMap[LEFT_KEY]  = dot => ({ x: dot.x - r * 2, y: dot.y })
-  moveMap[RIGHT_KEY] = dot => ({ x: dot.x + r * 2, y: dot.y })
-  moveMap[UP_KEY]    = dot => ({ x: dot.x, y: dot.y - r * 2 })
-  moveMap[DOWN_KEY]  = dot => ({ x: dot.x, y: dot.y + r * 2 })
+  moveMap[LEFT_KEY]  = ({x, y}) => ({ x: x - r * 2, y })
+  moveMap[RIGHT_KEY] = ({x, y}) => ({ x: x + r * 2, y })
+  moveMap[UP_KEY]    = ({x, y}) => ({ x, y: y - r * 2 })
+  moveMap[DOWN_KEY]  = ({x, y}) => ({ x, y: y + r * 2 })
   return moveMap[currDirection]
 }
 
