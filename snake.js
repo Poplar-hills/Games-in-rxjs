@@ -3,7 +3,7 @@ const canvas = document.querySelector('#game-canvas'),
       w = canvas.width = 600,
       h = canvas.height = 405,
       d = 15,           // dot's diameter
-      MOVE_SPEED = 50,
+      MOVE_SPEED = 100,
       INIT_SNAKE_LENGTH = 5
 
 const LEFT_KEY = 97,    // a
@@ -13,6 +13,7 @@ const LEFT_KEY = 97,    // a
       INIT_DIRECTION = RIGHT_KEY
 
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
+  .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
   .map(e => e.keyCode)
   .filter(keyCode => [LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY].includes(keyCode))
   .scan((prev, curr) => {
@@ -49,6 +50,8 @@ R-----------U---------------------L--------------
                       scan                         update each dot's position of the snake
 -------snake0----snake1----snake2----snake3------
 */
+
+// const food$ = Rx.Observable
 
 const game$ = Rx.Observable.combineLatest(
     snake$,
