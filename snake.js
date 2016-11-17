@@ -3,13 +3,13 @@ const canvas = document.querySelector('#game-canvas'),
       w = canvas.width = 600,
       h = canvas.height = 405,
       r = 7.5,
-      MOVE_SPEED = 500,
+      MOVE_SPEED = 50,
       INIT_SNAKE_LENGTH = 5
 
-const LEFT_KEY = 97,
-      UP_KEY = 119,
-      RIGHT_KEY = 100,
-      DOWN_KEY = 115,
+const LEFT_KEY = 97,    // a
+      UP_KEY = 119,     // w
+      RIGHT_KEY = 100,  // d
+      DOWN_KEY = 115,   // s
       INIT_DIRECTION = RIGHT_KEY
 
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
@@ -21,6 +21,14 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   }, INIT_DIRECTION)
   .distinctUntilChanged()
   .startWith(INIT_DIRECTION)
+
+/*
+----U----L----L----R----D----U----R----
+                 scan                    snake cannot revert its direction (L->R, R->L, U->D or D->U)
+----U----L----L----L----D----D----R----
+         distinctUntilChanged
+----U----L--------------D---------R----
+*/
 
 const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .map(() => ({ x: w / 2, y: h / 2 }))
@@ -37,13 +45,14 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
     )
   )
   .map(_ => _.snake)
+
 /*
-interval:   ---------0---------1---------2---------3---------
-direction$: R-----------U---------------------L--------------
-                             withLatestFrom
-            -------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
-                                  map
-            -----{R,snake}-{U,snake}-{U,snake}-{L,snake}-----   
+---------0---------1---------2---------3---------
+R-----------U---------------------L--------------
+                 withLatestFrom
+-------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
+                      map
+-----{R,snake}-{U,snake}-{U,snake}-{L,snake}-----  direction and the sanke itself are the two things required for updating the snake's position
 */
 
 const game$ = Rx.Observable.combineLatest(
