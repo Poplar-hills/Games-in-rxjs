@@ -36,7 +36,7 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
     .withLatestFrom(direction$)
     .map(([i, direction]) => ({ direction, snake }))
-    .scan((prev, curr) => prev.map(move(curr.direction)), snake)
+    .scan((prev, curr) => crawl(curr.direction, prev), snake)
   )
 
 /*
@@ -58,13 +58,20 @@ const game$ = Rx.Observable.combineLatest(
   )
   .subscribe(renderSence)
 
-function move (currDirection) {   // update a dot's position according to the direction
+function crawl (direction, snake) {
+  const oldSnakeHead = snake[snake.length - 1],
+        newSnakeHead = moveDot(oldSnakeHead, direction),
+        newSnakeBody = snake.slice(1)
+  return newSnakeBody.concat(newSnakeHead)
+}
+
+function moveDot ({ x, y }, direction) {   // update a dot's position according to the direction
   const moveMap = {}
-  moveMap[LEFT_KEY]  = ({ x, y }) => ({ x: x - d, y })
-  moveMap[RIGHT_KEY] = ({ x, y }) => ({ x: x + d, y })
-  moveMap[UP_KEY]    = ({ x, y }) => ({ x, y: y - d })
-  moveMap[DOWN_KEY]  = ({ x, y }) => ({ x, y: y + d })
-  return moveMap[currDirection]
+  moveMap[LEFT_KEY]  = { y, x: x - d }
+  moveMap[RIGHT_KEY] = { y, x: x + d }
+  moveMap[UP_KEY]    = { x, y: y - d }
+  moveMap[DOWN_KEY]  = { x, y: y + d }
+  return moveMap[direction]
 }
 
 function renderSence (actors) {
