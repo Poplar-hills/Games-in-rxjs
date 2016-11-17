@@ -56,7 +56,7 @@ const game$ = Rx.Observable.combineLatest(
   )
   .subscribe(renderSence)
 
-function move (currDirection) {
+function move (currDirection) {   // update a dot's position according to the direction
   const moveMap = {}
   moveMap[LEFT_KEY]  = ({x, y}) => ({ x: x - r * 2, y })
   moveMap[RIGHT_KEY] = ({x, y}) => ({ x: x + r * 2, y })
