@@ -57,35 +57,12 @@ const game$ = Rx.Observable.combineLatest(
   .subscribe(renderSence)
 
 function move (currDirection) {
-  return dot => {
-    if (currDirection === LEFT_KEY) {
-      return {
-        x: dot.x - r * 2,
-        y: dot.y
-      }
-    }
-
-    if (currDirection === RIGHT_KEY) {
-      return {
-        x: dot.x + r * 2,
-        y: dot.y
-      }
-    }
-
-    if (currDirection === UP_KEY) {
-      return {
-        x: dot.x,
-        y: dot.y - r * 2
-      }
-    }
-
-    if (currDirection === DOWN_KEY) {
-      return {
-        x: dot.x,
-        y: dot.y + r * 2
-      }
-    }
-  }
+  const moveMap = {}
+  moveMap[LEFT_KEY]  = dot => ({ x: dot.x - r * 2, y: dot.y })
+  moveMap[RIGHT_KEY] = dot => ({ x: dot.x + r * 2, y: dot.y })
+  moveMap[UP_KEY]    = dot => ({ x: dot.x, y: dot.y - r * 2 })
+  moveMap[DOWN_KEY]  = dot => ({ x: dot.x, y: dot.y + r * 2 })
+  return moveMap[currDirection]
 }
 
 function renderSence (actors) {
