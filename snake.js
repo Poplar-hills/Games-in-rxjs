@@ -2,7 +2,7 @@ const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
       w = canvas.width = 600,
       h = canvas.height = 405,
-      r = 7.5,
+      d = 15,           // dot's diameter
       MOVE_SPEED = 50,
       INIT_SNAKE_LENGTH = 5
 
@@ -31,12 +31,12 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
 */
 
 const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
-  .map(() => ({ x: w / 2, y: h / 2 }))
+  .map(i => ({ x: w / 2 + i * d, y: h / 2 }))
   .toArray()
   .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
     .withLatestFrom(direction$)
     .map(([i, direction]) => ({ direction, snake }))
-    .scan((prev, curr) => prev.map(move(curr.direction)), snake)  // update each dot's position of the snake
+    .scan((prev, curr) => prev.map(move(curr.direction)), snake)
   )
 
 /*
@@ -46,6 +46,8 @@ R-----------U---------------------L--------------
 -------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
                       map
 -----{R,snake}-{U,snake}-{U,snake}-{L,snake}-----  direction and the sanke itself are the two things required for updating the snake's position
+                      scan                         update each dot's position of the snake
+-------snake0----snake1----snake2----snake3------
 */
 
 const game$ = Rx.Observable.combineLatest(
@@ -58,10 +60,10 @@ const game$ = Rx.Observable.combineLatest(
 
 function move (currDirection) {   // update a dot's position according to the direction
   const moveMap = {}
-  moveMap[LEFT_KEY]  = ({x, y}) => ({ x: x - r * 2, y })
-  moveMap[RIGHT_KEY] = ({x, y}) => ({ x: x + r * 2, y })
-  moveMap[UP_KEY]    = ({x, y}) => ({ x, y: y - r * 2 })
-  moveMap[DOWN_KEY]  = ({x, y}) => ({ x, y: y + r * 2 })
+  moveMap[LEFT_KEY]  = ({ x, y }) => ({ x: x - d, y })
+  moveMap[RIGHT_KEY] = ({ x, y }) => ({ x: x + d, y })
+  moveMap[UP_KEY]    = ({ x, y }) => ({ x, y: y - d })
+  moveMap[DOWN_KEY]  = ({ x, y }) => ({ x, y: y + d })
   return moveMap[currDirection]
 }
 
@@ -74,9 +76,9 @@ function renderSnake (snake) {
   snake.forEach(renderDot)
 }
 
-function renderDot (d) {
+function renderDot ({ x, y }) {
   ctx.beginPath()
-  ctx.arc(d.x, d.y, r, 0, Math.PI * 2)
+  ctx.arc(x, y, d / 2, 0, Math.PI * 2)
   ctx.fillStyle = 'orange'
   ctx.fill()
 }
