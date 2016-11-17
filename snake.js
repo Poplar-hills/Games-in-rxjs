@@ -24,7 +24,7 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
 
 /*
 ----U----L----L----R----D----U----R----
-                 scan                    snake cannot revert its direction (L->R, R->L, U->D or D->U)
+                 scan                    snake cannot reverse its direction (L->R, R->L, U->D or D->U)
 ----U----L----L----L----D----D----R----
          distinctUntilChanged
 ----U----L--------------D---------R----
@@ -36,15 +36,8 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
     .withLatestFrom(direction$)
     .map(([i, direction]) => ({ direction, snake }))
-    .scan(
-      (prev, curr) => ({
-        snake: prev.snake.map(move(prev.direction, curr.direction)),  // update each dot's position of the snake
-        direction: curr.direction
-      }),
-      { snake, direction: INIT_DIRECTION }
-    )
+    .scan((prev, curr) => prev.map(move(curr.direction)), snake)  // update each dot's position of the snake
   )
-  .map(_ => _.snake)
 
 /*
 ---------0---------1---------2---------3---------
@@ -61,10 +54,9 @@ const game$ = Rx.Observable.combineLatest(
       snake
     })
   )
-  // .do(x => console.log(x))
   .subscribe(renderSence)
 
-function move (prevDirection, currDirection) {
+function move (currDirection) {
   return dot => {
     if (currDirection === LEFT_KEY) {
       return {
