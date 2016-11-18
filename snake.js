@@ -1,3 +1,5 @@
+const { always, T, cond, lt, gt, identity } = R
+
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
       w = canvas.width = 600,
@@ -68,13 +70,16 @@ function crawl (direction, snake) {
   return newSnakeBody.concat(newSnakeHead)
 }
 
-function moveDot ({ x, y }, direction) {   // update a dot's position according to the direction
-  return new Map([
-    [LEFT_KEY,  { y, x: x - d }],
-    [RIGHT_KEY, { y, x: x + d }],
-    [UP_KEY,    { x, y: y - d }],
-    [DOWN_KEY,  { x, y: y + d }]
-  ]).get(direction)
+function moveDot ({ x, y }, direction) {  // update a dot's position according to the direction
+  const validateMove = ({ x, y }) => ({ x: circulate(w, x), y: circulate(h, y) }),
+        nextMove = new Map([
+          [LEFT_KEY,  { y, x: x - d }],
+          [RIGHT_KEY, { y, x: x + d }],
+          [UP_KEY,    { x, y: y - d }],
+          [DOWN_KEY,  { x, y: y + d }]
+        ]).get(direction)
+
+  return validateMove(nextMove)
 }
 
 function renderSence (actors) {
@@ -92,3 +97,12 @@ function renderDot ({ x, y }) {
   ctx.fillStyle = 'orange'
   ctx.fill()
 }
+
+/*
+  Utils
+*/
+const circulate = (max, value) => cond([
+  [lt(max), always(0 + d / 2)],
+  [gt(0), always(max - d / 2)],
+  [T, identity]
+])(value)
