@@ -102,7 +102,7 @@ function renderDot ({ x, y }) {
   Utils
 */
 const circulate = (max, value) => cond([
-  [lt(max), always(0 + d / 2)],
-  [gt(0), always(max - d / 2)],
+  [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
+  [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
   [T, identity]
 ])(value)
