@@ -69,12 +69,12 @@ function crawl (direction, snake) {
 }
 
 function moveDot ({ x, y }, direction) {   // update a dot's position according to the direction
-  const moveMap = {}
-  moveMap[LEFT_KEY]  = { y, x: x - d }
-  moveMap[RIGHT_KEY] = { y, x: x + d }
-  moveMap[UP_KEY]    = { x, y: y - d }
-  moveMap[DOWN_KEY]  = { x, y: y + d }
-  return moveMap[direction]
+  return new Map([
+    [LEFT_KEY,  { y, x: x - d }],
+    [RIGHT_KEY, { y, x: x + d }],
+    [UP_KEY,    { x, y: y - d }],
+    [DOWN_KEY,  { x, y: y + d }]
+  ]).get(direction)
 }
 
 function renderSence (actors) {
