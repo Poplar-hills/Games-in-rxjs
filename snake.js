@@ -60,8 +60,8 @@ const game$ = Rx.Observable.combineLatest(
       snake
     })
   )
-  .takeWhile(({ snake }) => !gameOver(snake))
-  .subscribe(renderSence)
+  .takeWhile(({ snake }) => !isGameOver(snake))
+  .subscribe(renderSence, null, renderGameOverText)
 
 function crawl (direction, snake) {
   const oldSnakeHead = snake[snake.length - 1],
@@ -82,9 +82,9 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
   return validateMove(nextMove)
 }
 
-function gameOver (snake) {
+function isGameOver (snake) {
   const snakeHead = snake[snake.length - 1],
-        snakeBody = snake.slice(0, snake.length - 2)
+        snakeBody = snake.slice(0, snake.length - 4)
   return snakeBody.some(({ x, y }) => x === snakeHead.x && y === snakeHead.y)
 }
 
@@ -102,6 +102,14 @@ function renderDot ({ x, y }) {
   ctx.arc(x, y, d / 2, 0, Math.PI * 2)
   ctx.fillStyle = 'orange'
   ctx.fill()
+}
+
+function renderGameOverText () {
+  const text = 'GAME OVER'
+  ctx.font = '50px Arial'
+  let m = ctx.measureText(text)
+  ctx.fillStyle = '#ff6946'
+  ctx.fillText(text, w / 2 - m.width / 2, h / 2 - 40)
 }
 
 /*
