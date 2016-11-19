@@ -6,7 +6,7 @@ const canvas = document.querySelector('#game-canvas'),
       h = canvas.height = 405,
       d = 15,           // dot's diameter
       MOVE_SPEED = 100,
-      INIT_SNAKE_LENGTH = 5
+      INIT_SNAKE_LENGTH = 10
 
 const LEFT_KEY = 97,    // a
       UP_KEY = 119,     // w
@@ -23,7 +23,6 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
     return (inSuccession(LEFT_KEY, RIGHT_KEY) || inSuccession(UP_KEY, DOWN_KEY)) ? prev : curr
   }, INIT_DIRECTION)
   .distinctUntilChanged()
-  .startWith(INIT_DIRECTION)
 
 /*
 ----U----L----L----R----D----U----R----
@@ -61,6 +60,7 @@ const game$ = Rx.Observable.combineLatest(
       snake
     })
   )
+  .takeWhile(({ snake }) => !gameOver(snake))
   .subscribe(renderSence)
 
 function crawl (direction, snake) {
@@ -80,6 +80,12 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
         ]).get(direction)
 
   return validateMove(nextMove)
+}
+
+function gameOver (snake) {
+  const snakeHead = snake[snake.length - 1],
+        snakeBody = snake.slice(0, snake.length - 2)
+  return snakeBody.some(({ x, y }) => x === snakeHead.x && y === snakeHead.y)
 }
 
 function renderSence (actors) {
