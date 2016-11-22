@@ -1,3 +1,6 @@
+const { prop, last, cond, gt, lt, always, T, identity } = R,
+      containedBy = R.flip(R.contains)
+
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
       w = canvas.width = 615,
@@ -14,10 +17,10 @@ const LEFT_KEY = 97,    // a
 
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
-  .map(R.prop('keyCode'))
-  .filter(keyCode => [LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY].includes(keyCode))
+  .map(prop('keyCode'))
+  .filter(containedBy([LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY]))
   .scan((prev, curr) => {
-    const inSuccession = (...arr) => [prev, curr].every(_ => arr.includes(_))
+    const inSuccession = (...arr) => [prev, curr].every(containedBy(arr))
     return (inSuccession(LEFT_KEY, RIGHT_KEY) || inSuccession(UP_KEY, DOWN_KEY)) ? prev : curr
   }, INIT_DIRECTION)
   .distinctUntilChanged()
@@ -51,7 +54,7 @@ R-----------U---------------------L--------------  direction$
 */
 
 const food$ = snake$
-  .map(R.last)
+  .map(last)
   .scan(hasCaughtFood, randomPosition())
   .distinctUntilChanged()
 
@@ -87,7 +90,7 @@ function randomPosition () {
 }
 
 function crawl (direction, snake) {
-  const oldSnakeHead = R.last(snake),
+  const oldSnakeHead = last(snake),
         newSnakeHead = moveDot(oldSnakeHead, direction),
         newSnakeBody = snake.slice(1)
   return newSnakeBody.concat(newSnakeHead)
@@ -106,7 +109,7 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
 }
 
 function isGameOver (snake) {
-  const snakeHead = R.last(snake),
+  const snakeHead = last(snake),
         snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => samePosition(bodyDot, snakeHead))
 }
@@ -146,10 +149,10 @@ function renderGameOverText () {
   Utils
 */
 function circulate (max, value) {
-  return R.cond([
-    [R.lt(max), R.always(0 + d / 2)],   // return d/2 if greater than max
-    [R.gt(0), R.always(max - d / 2)],   // return max - d/2 if less than 0
-    [R.T, R.identity]
+  return cond([
+    [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
+    [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
+    [T, identity]
   ])(value)
 }
 
