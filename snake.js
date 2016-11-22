@@ -100,7 +100,7 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
 
 function isGameOver (snake) {
   const snakeHead = R.last(snake),
-        snakeBody = snake.slice(0, snake.length - 4)
+        snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => samePosition(bodyDot, snakeHead))
 }
 
@@ -114,25 +114,25 @@ function renderSnake (snake) {
   snake.forEach(renderDot('orange'))
 }
 
-function renderDot (color) {
+function renderDot (color, radius = d / 2) {
   return ({ x, y }) => {
     ctx.beginPath()
-    ctx.arc(x, y, d / 2, 0, Math.PI * 2)
+    ctx.arc(x, y, radius, 0, Math.PI * 2)
     ctx.fillStyle = color
     ctx.fill()
   }
 }
 
 function renderFood (food) {
-  renderDot('#0096FF')(food)
+  renderDot('#A0C800', d / 2 + 2)(food)
 }
 
 function renderGameOverText () {
   const text = 'GAME OVER'
   ctx.font = '50px Arial'
-  let m = ctx.measureText(text)
+  const textWidth = ctx.measureText(text).width
   ctx.fillStyle = '#ff6946'
-  ctx.fillText(text, w / 2 - m.width / 2, h / 2 - 40)
+  ctx.fillText(text, w / 2 - textWidth / 2, h / 2 - 40)
 }
 
 /*
