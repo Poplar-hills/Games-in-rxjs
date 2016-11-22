@@ -2,11 +2,11 @@ const { always, T, cond, lt, gt, identity } = R
 
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
-      w = canvas.width = 600,
+      w = canvas.width = 615,
       h = canvas.height = 405,
       d = 15,           // dot's diameter
-      MOVE_SPEED = 100,
-      INIT_SNAKE_LENGTH = 10
+      MOVE_SPEED = 500,
+      INIT_SNAKE_LENGTH = 5
 
 const LEFT_KEY = 97,    // a
       UP_KEY = 119,     // w
@@ -40,6 +40,7 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
     .map(([i, direction]) => ({ direction, snake }))
     .scan((prev, curr) => crawl(curr.direction, prev), snake)
   )
+  .share()
 
 /*
 ---------0---------1---------2---------3---------
@@ -52,16 +53,39 @@ R-----------U---------------------L--------------
 -------snake0----snake1----snake2----snake3------
 */
 
-// const food$ = Rx.Observable
+const snakeSubject = new Rx.Subject()
+snake$.subscribe(snakeSubject)
+const food$ = snakeSubject
+  .map(snake => snake[snake.length - 1])
+  .scan(hasCaughtFood, {x: d/2, y: d/2})
+  .distinctUntilChanged()
 
 const game$ = Rx.Observable.combineLatest(
-    snake$,
-    (snake) => ({
-      snake
-    })
+    snake$, food$,
+    (snake, food) => ({ snake, food })
   )
   .takeWhile(({ snake }) => !isGameOver(snake))
   .subscribe(renderSence, null, renderGameOverText)
+
+function hasCaughtFood (latestFood, snakeHead) {
+  console.log(latestFood, snakeHead)
+  if (latestFood.x === snakeHead.x && latestFood.y === snakeHead.y) {
+    return randomPosition() // return the position of the next food
+  } else {
+    return latestFood
+  }
+}
+
+function randomPosition () {
+  const min = d / 2,
+        posCountX = w / d - 1,
+        posCountY = h / d - 1
+
+  return {
+    x: rangeRandom(1, posCountX) * d - d / 2,
+    y: rangeRandom(1, posCountY) * d - d / 2
+  }
+}
 
 function crawl (direction, snake) {
   const oldSnakeHead = snake[snake.length - 1],
@@ -91,17 +115,24 @@ function isGameOver (snake) {
 function renderSence (actors) {
   ctx.clearRect(0, 0, w, h)   // clear the canvas first
   renderSnake(actors.snake)
+  renderFood(actors.food)
 }
 
 function renderSnake (snake) {
-  snake.forEach(renderDot)
+  snake.forEach(renderDot('orange'))
 }
 
-function renderDot ({ x, y }) {
-  ctx.beginPath()
-  ctx.arc(x, y, d / 2, 0, Math.PI * 2)
-  ctx.fillStyle = 'orange'
-  ctx.fill()
+function renderDot (color) {
+  return ({ x, y }) => {
+    ctx.beginPath()
+    ctx.arc(x, y, d / 2, 0, Math.PI * 2)
+    ctx.fillStyle = color
+    ctx.fill()
+  }
+}
+
+function renderFood (food) {
+  renderDot('#0096FF')(food)
 }
 
 function renderGameOverText () {
@@ -120,3 +151,5 @@ const circulate = (max, value) => cond([
   [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
   [T, identity]
 ])(value)
+
+const rangeRandom = (min, max) => ~~(Math.random() * (max - min + 1)) + min
