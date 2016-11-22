@@ -50,7 +50,7 @@ R-----------U---------------------L--------------  direction$
                       map
 -----{R,snake}-{U,snake}-{U,snake}-{L,snake}-----  direction and the sanke itself are the two things required for updating the snake's position
                       scan                         update each dot's position of the snake
--------snake0----snake1----snake2----snake3------
+------snake0[]--snake1[]--snake2[]--snake3[]-----
 */
 
 const food$ = snake$
@@ -59,7 +59,7 @@ const food$ = snake$
   .distinctUntilChanged()
 
 /*
-----------snake0----snake1----snake2----snake3------  snake$
+----------snake0[]--snake1[]--snake2[]--snake3[]-----  snake$
                          map
 ----------{x0,y0}---{x1,y1}---{x2,y2}---{x3,y3}-----  snakeHead$
                          scan
