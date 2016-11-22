@@ -76,7 +76,7 @@ const game$ = Rx.Observable.combineLatest(
   .subscribe(renderSence, null, renderGameOverText)
 
 function hasCaughtFood (latestFood, snakeHead) {
-  return samePosition(latestFood, snakeHead)
+  return atSamePosition(latestFood, snakeHead)
     ? randomPosition()  // generate new food
     : latestFood
 }
@@ -111,7 +111,7 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
 function isGameOver (snake) {
   const snakeHead = last(snake),
         snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
-  return snakeBody.some(bodyDot => samePosition(bodyDot, snakeHead))
+  return snakeBody.some(bodyDot => atSamePosition(bodyDot, snakeHead))
 }
 
 function renderSence (actors) {
@@ -160,6 +160,6 @@ function rangeRandom (min, max) {
   return ~~(Math.random() * (max - min + 1)) + min
 }
 
-function samePosition (dotA, dotB) {
+function atSamePosition (dotA, dotB) {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
