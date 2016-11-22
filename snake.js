@@ -5,7 +5,7 @@ const canvas = document.querySelector('#game-canvas'),
       w = canvas.width = 615,
       h = canvas.height = 405,
       d = 15,           // dot's diameter
-      MOVE_SPEED = 500,
+      MOVE_SPEED = 100,
       INIT_SNAKE_LENGTH = 5
 
 const LEFT_KEY = 97,    // a
@@ -57,7 +57,7 @@ const snakeSubject = new Rx.Subject()
 snake$.subscribe(snakeSubject)
 const food$ = snakeSubject
   .map(snake => snake[snake.length - 1])
-  .scan(hasCaughtFood, {x: d/2, y: d/2})
+  .scan(hasCaughtFood, randomPosition())
   .distinctUntilChanged()
 
 const game$ = Rx.Observable.combineLatest(
@@ -146,10 +146,14 @@ function renderGameOverText () {
 /*
   Utils
 */
-const circulate = (max, value) => cond([
-  [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
-  [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
-  [T, identity]
-])(value)
+function circulate (max, value) {
+  return cond([
+    [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
+    [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
+    [T, identity]
+  ])(value)
+}
 
-const rangeRandom = (min, max) => ~~(Math.random() * (max - min + 1)) + min
+function rangeRandom (min, max) {
+  return ~~(Math.random() * (max - min + 1)) + min
+}
