@@ -67,22 +67,20 @@ const game$ = Rx.Observable.combineLatest(
 
 function hasCaughtFood (latestFood, snakeHead) {
   return samePosition(latestFood, snakeHead)
-    ? randomPosition() // return the position of the next food
+    ? randomPosition()  // generate new food
     : latestFood
 }
 
 function randomPosition () {
-  const posCountX = w / d - 1,
-        posCountY = h / d - 1
-
+  const randomCoordinate = max => rangeRandom(1, max) * d - d / 2
   return {
-    x: rangeRandom(1, posCountX) * d - d / 2,
-    y: rangeRandom(1, posCountY) * d - d / 2
+    x: randomCoordinate(w / d - 1),
+    y: randomCoordinate(h / d - 1)
   }
 }
 
 function crawl (direction, snake) {
-  const oldSnakeHead = snake[snake.length - 1],
+  const oldSnakeHead = R.last(snake),
         newSnakeHead = moveDot(oldSnakeHead, direction),
         newSnakeBody = snake.slice(1)
   return newSnakeBody.concat(newSnakeHead)
