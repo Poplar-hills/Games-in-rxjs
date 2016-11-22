@@ -26,7 +26,7 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   .distinctUntilChanged()
 
 /*
-----U----L----L----R----D----U----R----
+----U----L----L----R----D----U----R----  keypress$
                  scan                    snake cannot reverse its direction (L->R, R->L, U->D or D->U)
 ----U----L----L----L----D----D----R----
          distinctUntilChanged
