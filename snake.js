@@ -1,5 +1,3 @@
-const { always, T, cond, lt, gt, identity } = R
-
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
       w = canvas.width = 615,
@@ -16,7 +14,7 @@ const LEFT_KEY = 97,    // a
 
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
-  .map(e => e.keyCode)
+  .map(R.prop('keyCode'))
   .filter(keyCode => [LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY].includes(keyCode))
   .scan((prev, curr) => {
     const inSuccession = (...arr) => [prev, curr].every(_ => arr.includes(_))
@@ -56,7 +54,7 @@ R-----------U---------------------L--------------
 const snakeSubject = new Rx.Subject()
 snake$.subscribe(snakeSubject)
 const food$ = snakeSubject
-  .map(snake => snake[snake.length - 1])
+  .map(R.last)
   .scan(hasCaughtFood, randomPosition())
   .distinctUntilChanged()
 
@@ -68,17 +66,13 @@ const game$ = Rx.Observable.combineLatest(
   .subscribe(renderSence, null, renderGameOverText)
 
 function hasCaughtFood (latestFood, snakeHead) {
-  console.log(latestFood, snakeHead)
-  if (latestFood.x === snakeHead.x && latestFood.y === snakeHead.y) {
-    return randomPosition() // return the position of the next food
-  } else {
-    return latestFood
-  }
+  return samePosition(latestFood, snakeHead)
+    ? randomPosition() // return the position of the next food
+    : latestFood
 }
 
 function randomPosition () {
-  const min = d / 2,
-        posCountX = w / d - 1,
+  const posCountX = w / d - 1,
         posCountY = h / d - 1
 
   return {
@@ -107,9 +101,9 @@ function moveDot ({ x, y }, direction) {  // update a dot's position according t
 }
 
 function isGameOver (snake) {
-  const snakeHead = snake[snake.length - 1],
+  const snakeHead = R.last(snake),
         snakeBody = snake.slice(0, snake.length - 4)
-  return snakeBody.some(({ x, y }) => x === snakeHead.x && y === snakeHead.y)
+  return snakeBody.some(bodyDot => samePosition(bodyDot, snakeHead))
 }
 
 function renderSence (actors) {
@@ -147,13 +141,17 @@ function renderGameOverText () {
   Utils
 */
 function circulate (max, value) {
-  return cond([
-    [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
-    [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
-    [T, identity]
+  return R.cond([
+    [R.lt(max), R.always(0 + d / 2)],   // return d/2 if greater than max
+    [R.gt(0), R.always(max - d / 2)],   // return max - d/2 if less than 0
+    [R.T, R.identity]
   ])(value)
 }
 
 function rangeRandom (min, max) {
   return ~~(Math.random() * (max - min + 1)) + min
+}
+
+function samePosition (dotA, dotB) {
+  return dotA.x === dotB.x && dotA.y === dotB.y
 }
