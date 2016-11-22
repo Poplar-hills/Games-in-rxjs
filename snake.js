@@ -41,8 +41,8 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .share()
 
 /*
----------0---------1---------2---------3---------
-R-----------U---------------------L--------------
+---------0---------1---------2---------3---------  interval$
+R-----------U---------------------L--------------  direction$
                  withLatestFrom
 -------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
                       map
@@ -57,6 +57,16 @@ const food$ = snakeSubject
   .map(R.last)
   .scan(hasCaughtFood, randomPosition())
   .distinctUntilChanged()
+
+/*
+----------snake0----snake1----snake2----snake3------  snake$
+                         map
+----------{x0,y0}---{x1,y1}---{x2,y2}---{x3,y3}-----  snakeHead$
+                         scan
+{x9,y2}---{x9,y2}---{x9,y2}---{x4,y6}---{x4,y6}-----  food$
+                 distinctUntilChanged       
+{x9,y2}-----------------------{x4,y6}---------------  food$ with unique elements
+*/
 
 const game$ = Rx.Observable.combineLatest(
     snake$, food$,
