@@ -51,7 +51,7 @@ R-----------U---------------------L--------------  direction$
 -------snake0----snake1----snake2----snake3------
 */
 
-const snakeSubject = new Rx.Subject()
+const snakeSubject = new Rx.Subject()   // Q: can we derive a new stream from an existing stream without using Subject ????
 snake$.subscribe(snakeSubject)
 const food$ = snakeSubject
   .map(R.last)
