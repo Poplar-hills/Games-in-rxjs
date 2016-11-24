@@ -16,7 +16,7 @@ const LEFT_KEY = 97,    // a
       DOWN_KEY = 115,   // s
       INIT_DIRECTION = RIGHT_KEY
 
-const foodProxy$ = new Rx.Subject()
+const foodProxy$ = new Rx.Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
@@ -51,7 +51,7 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
 /*
 ---------0---------1---------2---------3---------  interval$
 R-----------U---------------------L--------------  direction$
-{}-----------U---------------------L--------------  foodProxy$
+{}-----------U---------------------L-------------  foodProxy$
                  withLatestFrom
 -------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
                       map
@@ -62,24 +62,23 @@ R-----------U---------------------L--------------  direction$
 
 const food$ = snake$
   .map(last)
-  .scan((prevFood, snakeHead) => atSamePosition(prevFood, snakeHead)
-    ? randomPosition()  // generate new food
-    : prevFood,
-    INIT_FOOD_POSITION
-  )
+  .scan((prevFood, snakeHead) => {
+    return atSamePosition(prevFood, snakeHead) ? randomPosition() : prevFood
+  }, INIT_FOOD_POSITION)
   .distinctUntilChanged()
   .share()
+  .do(z => console.log(z))
 
-food$.subscribe(food => foodProxy$.next(food))
+food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
 /*
-----------snake0[]--snake1[]--snake2[]--snake3[]-----  snake$
+----------snake0[]--snake1[]--snake2[]--snake3[]----  snake$
                          map
-----------{x0,y0}---{x1,y1}---{x2,y2}---{x3,y3}-----  snakeHead$
+----------{x0,y0}---{x0,y1}---{x0,y2}---{x0,y3}-----  snakeHead$
                          scan
-{x9,y2}---{x9,y2}---{x9,y2}---{x4,y6}---{x4,y6}-----  food$
+----------{x0,y2}---{x0,y2}---{x4,y6}---{x4,y6}-----  food$
                  distinctUntilChanged       
-{x9,y2}-----------------------{x4,y6}---------------  food$ with unique elements
+----------{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
 */
 
 const game$ = Rx.Observable.combineLatest(
