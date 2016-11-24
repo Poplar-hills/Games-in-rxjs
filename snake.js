@@ -49,15 +49,15 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .share()    // snake$ needs to be 'hot' as it is subscribed twice
 
 /*
----------0---------1---------2---------3---------  interval$
-R-----------U---------------------L--------------  direction$
-f1-------f1------------------f2------------------  foodProxy$
-                 withLatestFrom
-------[0,R,f1]--[1,U,f1]--[2,U,f2]--[3,L,f2]-----
-                      map
------{R,snake}-{U,snake}-{U,snake}-{L,snake}-----  direction and the sanke itself are the two things required for updating the snake's position
-                      scan                         update each dot's position of the snake
-------snake0[]--snake1[]--snake2[]--snake3[]-----  snake$
+----------0------------1------------2------------3---------  interval$
+R--------------U----------------------------L--------------  direction$
+f1--------f1------------------------f2---------------------  foodProxy$
+                        withLatestFrom
+-------[0,R,f1]-----[1,U,f1]-----[2,U,f2]-----[3,L,f2]-----
+               withLatestFrom's project function 
+-----{R,snake,f1}-{U,snake,f1}-{U,snake,f2}-{L,snake,f2}---  direction and the sanke itself are the two things required for updating the snake's position
+                            scan                             update each dot's position of the snake
+-------snake0[]-----snake1[]-----snake2[]-----snake3[]-----  snake$
 */
 
 const food$ = snake$
@@ -71,14 +71,27 @@ const food$ = snake$
 food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
 /*
-----------snake0[]--snake1[]--snake2[]--snake3[]----  snake$
-                         map
-----------{x0,y0}---{x0,y1}---{x0,y2}---{x0,y3}-----  snakeHead$
-                         scan
-----------{x0,y2}---{x0,y2}---{x4,y6}---{x4,y6}-----  food$
-                 distinctUntilChanged       
-----------{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
+-----snake0[]--snake1[]--snake2[]--snake3[]----  snake$
+                      map
+-----{x0,y0}---{x0,y1}---{x0,y2}---{x0,y3}-----  snakeHead$
+                      scan
+-----{x0,y2}---{x0,y2}---{x4,y6}---{x4,y6}-----  food$
+               distinctUntilChanged       
+-----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
 */
+
+function crawl (prev, curr) {
+  const oldSnakeHead = last(prev.snake),
+        newSnakeHead = moveDot(oldSnakeHead, curr.direction),
+        hasCaughtFood = !equals(prev.food, curr.food),
+        newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+
+  return {
+    snake: newSnakeBody.concat(newSnakeHead),
+    direction: curr.direction,
+    food: curr.food
+  }
+}
 
 const game$ = Rx.Observable.combineLatest(
     snake$, food$,
@@ -92,19 +105,6 @@ function randomPosition () {
   return {
     x: randomCoordinate(w / d - 1),
     y: randomCoordinate(h / d - 1)
-  }
-}
-
-function crawl (prev, curr) {
-  const oldSnakeHead = last(prev.snake),
-        newSnakeHead = moveDot(oldSnakeHead, curr.direction),
-        hasCaughtFood = prev.food.x !== curr.food.x || prev.food.y !== curr.food.y,
-        newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-
-  return {
-    direction: curr.direction,
-    snake: newSnakeBody.concat(newSnakeHead),
-    food: curr.food
   }
 }
 
