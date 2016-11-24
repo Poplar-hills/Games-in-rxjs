@@ -15,6 +15,8 @@ const LEFT_KEY = 97,    // a
       DOWN_KEY = 115,   // s
       INIT_DIRECTION = RIGHT_KEY
 
+const foodProxy$ = new Rx.Subject()
+
 const direction$ = Rx.Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
   .map(prop('keyCode'))
@@ -33,18 +35,22 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
 ----U----L--------------D---------R----
 */
 
+const INIT_FOOD_POSITION = randomPosition()
+
 const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .map(i => ({ x: w / 2 + i * d, y: h / 2 }))
   .toArray()
   .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
-    .withLatestFrom(direction$, (i, direction) => ({ direction, snake }))
-    .scan((prev, curr) => crawl(curr.direction, prev), snake)
+    .withLatestFrom(direction$, foodProxy$.startWith(INIT_FOOD_POSITION), (i, direction, food) => ({ direction, snake, food }))
+    .scan(crawl, {snake, food: INIT_FOOD_POSITION})
   )
+  .map(prop('snake'))
   .share()
 
 /*
 ---------0---------1---------2---------3---------  interval$
 R-----------U---------------------L--------------  direction$
+{}-----------U---------------------L--------------  foodProxy$
                  withLatestFrom
 -------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
                       map
@@ -55,8 +61,15 @@ R-----------U---------------------L--------------  direction$
 
 const food$ = snake$
   .map(last)
-  .scan(hasCaughtFood, randomPosition())
+  .scan((latestFood, snakeHead) => {
+    return atSamePosition(latestFood, snakeHead)
+      ? randomPosition()  // generate new food
+      : latestFood
+  }, INIT_FOOD_POSITION)
   .distinctUntilChanged()
+  .share()
+
+food$.subscribe(food => foodProxy$.next(food))
 
 /*
 ----------snake0[]--snake1[]--snake2[]--snake3[]-----  snake$
@@ -89,11 +102,19 @@ function randomPosition () {
   }
 }
 
-function crawl (direction, snake) {
-  const oldSnakeHead = last(snake),
-        newSnakeHead = moveDot(oldSnakeHead, direction),
-        newSnakeBody = snake.slice(1)
-  return newSnakeBody.concat(newSnakeHead)
+function crawl (prev, curr) {
+  const oldSnakeHead = last(prev.snake),
+        newSnakeHead = moveDot(oldSnakeHead, curr.direction),
+        hasCaughtFood = prev.food.x !== curr.food.x || prev.food.y !== curr.food.y,
+        newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+
+  // console.log(oldSnakeHead, prev.food)
+
+  return {
+    direction: curr.direction,
+    snake: newSnakeBody.concat(newSnakeHead),
+    food: curr.food
+  }
 }
 
 function moveDot ({ x, y }, direction) {  // update a dot's position according to the direction
