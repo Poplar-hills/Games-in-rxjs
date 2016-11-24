@@ -7,7 +7,8 @@ const canvas = document.querySelector('#game-canvas'),
       h = canvas.height = 405,
       d = 15,           // dot's diameter
       MOVE_SPEED = 100,
-      INIT_SNAKE_LENGTH = 5
+      INIT_SNAKE_LENGTH = 5,
+      INIT_FOOD_POSITION = randomPosition()
 
 const LEFT_KEY = 97,    // a
       UP_KEY = 119,     // w
@@ -35,13 +36,13 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
 ----U----L--------------D---------R----
 */
 
-const INIT_FOOD_POSITION = randomPosition()
-
 const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
   .map(i => ({ x: w / 2 + i * d, y: h / 2 }))
   .toArray()
   .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
-    .withLatestFrom(direction$, foodProxy$.startWith(INIT_FOOD_POSITION), (i, direction, food) => ({ direction, snake, food }))
+    .withLatestFrom(
+      direction$, foodProxy$.startWith(INIT_FOOD_POSITION),
+      (i, direction, food) => ({ direction, snake, food }))
     .scan(crawl, {snake, food: INIT_FOOD_POSITION})
   )
   .map(prop('snake'))
@@ -61,11 +62,11 @@ R-----------U---------------------L--------------  direction$
 
 const food$ = snake$
   .map(last)
-  .scan((latestFood, snakeHead) => {
-    return atSamePosition(latestFood, snakeHead)
-      ? randomPosition()  // generate new food
-      : latestFood
-  }, INIT_FOOD_POSITION)
+  .scan((prevFood, snakeHead) => atSamePosition(prevFood, snakeHead)
+    ? randomPosition()  // generate new food
+    : prevFood,
+    INIT_FOOD_POSITION
+  )
   .distinctUntilChanged()
   .share()
 
@@ -88,10 +89,10 @@ const game$ = Rx.Observable.combineLatest(
   .takeWhile(({ snake }) => !isGameOver(snake))
   .subscribe(renderSence, null, renderGameOverText)
 
-function hasCaughtFood (latestFood, snakeHead) {
-  return atSamePosition(latestFood, snakeHead)
+function hasCaughtFood (prevFood, snakeHead) {
+  return atSamePosition(prevFood, snakeHead)
     ? randomPosition()  // generate new food
-    : latestFood
+    : prevFood
 }
 
 function randomPosition () {
@@ -107,8 +108,6 @@ function crawl (prev, curr) {
         newSnakeHead = moveDot(oldSnakeHead, curr.direction),
         hasCaughtFood = prev.food.x !== curr.food.x || prev.food.y !== curr.food.y,
         newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-
-  // console.log(oldSnakeHead, prev.food)
 
   return {
     direction: curr.direction,
