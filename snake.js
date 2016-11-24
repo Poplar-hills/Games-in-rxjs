@@ -68,7 +68,7 @@ const food$ = snake$
   .distinctUntilChanged()
   .share()    // food$ is also subscribed twice
 
-food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
+const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
 /*
 -----snake0[]--snake1[]--snake2[]--snake3[]----  snake$
@@ -93,7 +93,7 @@ function crawl (prev, curr) {
   }
 }
 
-const game$ = Rx.Observable.combineLatest(
+const gameSubscription = Rx.Observable.combineLatest(
     snake$, food$,
     (snake, food) => ({ snake, food })
   )
@@ -150,6 +150,8 @@ function renderFood (food) {
 }
 
 function renderGameOverText () {
+  gameSubscription.unsubscribe()
+  foodSubscription.unsubscribe()
   const text = 'GAME OVER'
   ctx.font = '50px Arial'
   const textWidth = ctx.measureText(text).width
