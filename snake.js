@@ -46,18 +46,18 @@ const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
     .scan(crawl, {snake, food: INIT_FOOD_POSITION})
   )
   .map(prop('snake'))
-  .share()
+  .share()    // snake$ needs to be 'hot' as it is subscribed twice
 
 /*
 ---------0---------1---------2---------3---------  interval$
 R-----------U---------------------L--------------  direction$
-{}-----------U---------------------L-------------  foodProxy$
+f1-------f1------------------f2------------------  foodProxy$
                  withLatestFrom
--------[0,R]-----[1,U]-----[2,U]-----[3,L]-------
+------[0,R,f1]--[1,U,f1]--[2,U,f2]--[3,L,f2]-----
                       map
 -----{R,snake}-{U,snake}-{U,snake}-{L,snake}-----  direction and the sanke itself are the two things required for updating the snake's position
                       scan                         update each dot's position of the snake
-------snake0[]--snake1[]--snake2[]--snake3[]-----
+------snake0[]--snake1[]--snake2[]--snake3[]-----  snake$
 */
 
 const food$ = snake$
@@ -66,8 +66,7 @@ const food$ = snake$
     return atSamePosition(prevFood, snakeHead) ? randomPosition() : prevFood
   }, INIT_FOOD_POSITION)
   .distinctUntilChanged()
-  .share()
-  .do(z => console.log(z))
+  .share()    // food$ is also subscribed twice
 
 food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
