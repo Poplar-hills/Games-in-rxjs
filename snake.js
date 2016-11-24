@@ -98,7 +98,10 @@ const gameSubscription = Rx.Observable.combineLatest(
     (snake, food) => ({ snake, food })
   )
   .takeWhile(({ snake }) => !isGameOver(snake))
-  .subscribe(renderSence, null, renderGameOverText)
+  .subscribe(renderSence, null, () => {
+    renderGameOverText()
+    cleanUp()
+  })
 
 function randomPosition () {
   const randomCoordinate = max => randomBetween(1, max) * d - d / 2
@@ -150,13 +153,16 @@ function renderFood (food) {
 }
 
 function renderGameOverText () {
-  gameSubscription.unsubscribe()
-  foodSubscription.unsubscribe()
   const text = 'GAME OVER'
   ctx.font = '50px Arial'
   const textWidth = ctx.measureText(text).width
   ctx.fillStyle = '#ff6946'
   ctx.fillText(text, w / 2 - textWidth / 2, h / 2 - 40)
+}
+
+function cleanUp () {
+  gameSubscription.unsubscribe()
+  foodSubscription.unsubscribe()
 }
 
 /*
