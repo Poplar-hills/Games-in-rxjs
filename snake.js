@@ -99,7 +99,7 @@ const gameSubscription = Rx.Observable.combineLatest(
   )
   .takeWhile(({ snake }) => !isGameOver(snake))
   .subscribe(renderSence, null, () => {
-    renderGameOverText()
+    renderGameText('GAME OVER', '#FF6946')
     cleanUp()
   })
 
@@ -152,11 +152,10 @@ function renderFood (food) {
   renderDot('#A0C800', d / 2 + 2)(food)
 }
 
-function renderGameOverText () {
-  const text = 'GAME OVER'
+function renderGameText (text, color) {
   ctx.font = '50px Arial'
   const textWidth = ctx.measureText(text).width
-  ctx.fillStyle = '#ff6946'
+  ctx.fillStyle = color
   ctx.fillText(text, w / 2 - textWidth / 2, h / 2 - 40)
 }
 
