@@ -1,4 +1,4 @@
-const { prop, last, cond, gt, lt, always, T, identity } = R,
+const { prop, last, equals, cond, gt, lt, always, T, identity } = R,
       containedBy = R.flip(R.contains)
 
 const canvas = document.querySelector('#game-canvas'),
@@ -86,12 +86,6 @@ const game$ = Rx.Observable.combineLatest(
   )
   .takeWhile(({ snake }) => !isGameOver(snake))
   .subscribe(renderSence, null, renderGameOverText)
-
-function hasCaughtFood (prevFood, snakeHead) {
-  return atSamePosition(prevFood, snakeHead)
-    ? randomPosition()  // generate new food
-    : prevFood
-}
 
 function randomPosition () {
   const randomCoordinate = max => rangeRandom(1, max) * d - d / 2
