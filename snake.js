@@ -101,7 +101,7 @@ const game$ = Rx.Observable.combineLatest(
   .subscribe(renderSence, null, renderGameOverText)
 
 function randomPosition () {
-  const randomCoordinate = max => rangeRandom(1, max) * d - d / 2
+  const randomCoordinate = max => randomBetween(1, max) * d - d / 2
   return {
     x: randomCoordinate(w / d - 1),
     y: randomCoordinate(h / d - 1)
@@ -168,7 +168,7 @@ function circulate (max, value) {
   ])(value)
 }
 
-function rangeRandom (min, max) {
+function randomBetween (min, max) {
   return ~~(Math.random() * (max - min + 1)) + min
 }
 
