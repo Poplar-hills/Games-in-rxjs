@@ -1,5 +1,5 @@
-const SPEED = 1000,
-      STAR_NUMBER = 5
+const SPEED = 40,
+      STAR_NUMBER = 250
 
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d')
@@ -25,6 +25,28 @@ const stars$ = Rx.Observable.range(0, STAR_NUMBER)
       return stars
     })
   )
+
+/*
+  Game
+*/
+const gameSubscription = Rx.Observable.combineLatest(
+    stars$,
+    (stars) => ({ stars })
+  )
+  .subscribe(renderSense)
+
+function renderSense (actors) {
+  renderStars(actors.stars)
+}
+
+function renderStars (stars) {
+  ctx.fillStyle = '#000'
+  ctx.fillRect(0, 0, w, h)
+  ctx.fillStyle = '#fff'
+  stars.forEach(({ x, y, size }) => {
+    ctx.fillRect(x, y, size, size)
+  })
+}
 
 /*
   Utils
