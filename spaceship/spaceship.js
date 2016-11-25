@@ -5,7 +5,8 @@ const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d')
 
 const w = canvas.width = window.innerWidth,
-      h = canvas.height = window.innerHeight
+      h = canvas.height = window.innerHeight,
+      SPACESHIP_Y = h - 100
 
 /*
   Stars
@@ -60,7 +61,7 @@ function renderSpaceship () {
 }
 
 function renderTriangle () {
-  
+
 }
 
 /*
