@@ -19,24 +19,31 @@ const stars$ = Rx.Observable.range(0, STAR_NUMBER)
   .toArray()
   .mergeMap(stars => Rx.Observable.interval(SPEED)
     .map(() => {
-      stars.forEach(_ => {
-        _.y = _.y <= h ? _.y + 3 : 0
-      })
+      stars.forEach(_ => { _.y = _.y <= h ? _.y + 3 : 0 })
       return stars
     })
   )
 
 /*
+  Spaceship
+*/
+const spaceship$ = Rx.Observable.fromEvent(document, 'mousemove')
+  .smaple(SPEED)
+  .map(e => ({ x: e.clientX, y: SPACESHIP_Y }))
+  .startWith({ x: w / 2, y: SPACESHIP_Y })
+
+/*
   Game
 */
 const gameSubscription = Rx.Observable.combineLatest(
-    stars$,
-    (stars) => ({ stars })
+    stars$, spaceship$,
+    (stars, spaceship) => ({ stars, spaceship })
   )
   .subscribe(renderSense)
 
 function renderSense (actors) {
   renderStars(actors.stars)
+  renderSpaceship(actors.spaceship)
 }
 
 function renderStars (stars) {
@@ -46,6 +53,14 @@ function renderStars (stars) {
   stars.forEach(({ x, y, size }) => {
     ctx.fillRect(x, y, size, size)
   })
+}
+
+function renderSpaceship () {
+
+}
+
+function renderTriangle () {
+  
 }
 
 /*
