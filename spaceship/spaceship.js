@@ -1,5 +1,6 @@
 const GAME_SPEED = 40,
       STAR_NUMBER = 250,
+      ENEMY_FERQ = 500,
       SPACE_KEY = 32
 
 const canvas = document.querySelector('#game-canvas'),
@@ -7,7 +8,7 @@ const canvas = document.querySelector('#game-canvas'),
 
 const w = canvas.width = window.innerWidth,
       h = canvas.height = window.innerHeight,
-      SPACESHIP_Y = h - 100
+      SPACESHIP_Y = h - 80
 
 // stars
 const stars$ = Rx.Observable.range(0, STAR_NUMBER)
@@ -36,7 +37,7 @@ const spaceshipShots$ = Rx.Observable.merge(
     Rx.Observable.fromEvent(document, 'keypress')
       .filter(e => e.keyCode === SPACE_KEY)
   )
-  .throttleTime(50)     // fire frequency
+  .throttleTime(50)     // max fire frequency
   .withLatestFrom(spaceship$, (e, spaceship) => ({
     x: spaceship.x,
     y: SPACESHIP_Y
@@ -46,17 +47,38 @@ const spaceshipShots$ = Rx.Observable.merge(
     .filter(_ => _.y > 0),  // get rid of those shots that have flown beyond the screen
   [])
 
+// enemies
+const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
+  .map(i => ({
+    x: randomBetween(0, w),
+    y: 0,
+    step: randomBetween(4, 6)   // the moving distance in each frame
+    // armed: oneInEvery(3)   // TODO: return true every n times
+  }))
+  .scan((enemies, enemy) => enemies
+    .concat(enemy)
+    .filter(_ => _.y < h),
+  [])
+  .do(x => console.log(x))
+
 // gameSubscription
 const gameSubscription = Rx.Observable.combineLatest(
-    stars$, spaceship$, spaceshipShots$,
-    (stars, spaceship, spaceshipShots) => ({ stars, spaceship, spaceshipShots })
+    stars$, spaceship$, spaceshipShots$, enemies$,
+    (stars, spaceship, spaceshipShots, enemies) => ({
+      stars,
+      spaceship,
+      spaceshipShots,
+      enemies
+    })
   )
+  .sampleTime(GAME_SPEED)
   .subscribe(renderSense)
 
 function renderSense (actors) {
   renderStars(actors.stars)
   renderSpaceship(actors.spaceship)
   renderSpaceshipShots(actors.spaceshipShots)
+  renderEnemies(actors.enemies)
 }
 
 function renderStars (stars) {
@@ -69,13 +91,20 @@ function renderStars (stars) {
 }
 
 function renderSpaceship ({ x, y }) {
-  renderTriangle(x, y, 20, 'up', 'orange')
+  renderTriangle(x, y, 20, 'up', '#A0C800')
 }
 
 function renderSpaceshipShots (shots) {
   shots.forEach(_ => {
     _.y -= 15
-    renderTriangle(_.x, _.y, 5, 'up', 'gold')
+    renderTriangle(_.x, _.y, 5, 'up', 'orange')
+  })
+}
+
+function renderEnemies (enemies) {
+  enemies.forEach(_ => {
+    _.y += _.step
+    renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
   })
 }
 
