@@ -43,8 +43,8 @@ const spaceshipShots$ = Rx.Observable.merge(
   }))
   .scan((shots, shot) => shots
     .concat(shot)
-    .filter(_ => _.y > 0),
-  [])   // get rid of those shots that have flown beyond the screen
+    .filter(_ => _.y > 0),  // get rid of those shots that have flown beyond the screen
+  [])
 
 // gameSubscription
 const gameSubscription = Rx.Observable.combineLatest(
