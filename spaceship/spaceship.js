@@ -1,5 +1,7 @@
-const SPEED = 40,
-      STAR_NUMBER = 250
+const GAME_SPEED = 40,
+      STAR_NUMBER = 250,
+      SHOT_SPEED = 15,
+      SPACE_KEY = 32
 
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d')
@@ -8,9 +10,7 @@ const w = canvas.width = window.innerWidth,
       h = canvas.height = window.innerHeight,
       SPACESHIP_Y = h - 100
 
-/*
-  Stars
-*/
+// stars
 const stars$ = Rx.Observable.range(0, STAR_NUMBER)
   .map(() => ({
     x: randomBetween(0, w),
@@ -18,33 +18,48 @@ const stars$ = Rx.Observable.range(0, STAR_NUMBER)
     size: randomBetween(1, 3)
   }))
   .toArray()
-  .mergeMap(stars => Rx.Observable.interval(SPEED)
+  .mergeMap(stars => Rx.Observable.interval(GAME_SPEED)
     .map(() => {
       stars.forEach(_ => { _.y = _.y <= h ? _.y + 3 : 0 })
       return stars
     })
   )
 
-/*
-  Spaceship
-*/
+// spaceship
 const spaceship$ = Rx.Observable.fromEvent(document, 'mousemove')
-  .sampleTime(SPEED)
+  .sampleTime(GAME_SPEED)
   .map(e => ({ x: e.clientX, y: SPACESHIP_Y }))
   .startWith({ x: w / 2, y: SPACESHIP_Y })
 
-/*
-  Game
-*/
+// spaceshipShots
+const spaceshipShots$ = Rx.Observable.merge(
+    Rx.Observable.fromEvent(document, 'click'),
+    Rx.Observable.fromEvent(document, 'keypress')
+      .filter(e => e.keyCode === SPACE_KEY)
+  )
+  .throttleTime(50)
+  .withLatestFrom(spaceship$, (e, spaceship) => ({
+    x: spaceship.x,
+    y: SPACESHIP_Y
+  }))
+  .scan((prev, curr) => {
+    const shots = Array.isArray(prev) ? prev : [prev]
+    return shots.concat(curr)
+  })
+  .startWith([])
+  .do(x => console.log(x))
+
+// gameSubscription
 const gameSubscription = Rx.Observable.combineLatest(
-    stars$, spaceship$,
-    (stars, spaceship) => ({ stars, spaceship })
+    stars$, spaceship$, spaceshipShots$,
+    (stars, spaceship, spaceshipShots) => ({ stars, spaceship, spaceshipShots })
   )
   .subscribe(renderSense)
 
 function renderSense (actors) {
   renderStars(actors.stars)
   renderSpaceship(actors.spaceship)
+  renderShots(actors.spaceshipShots)
 }
 
 function renderStars (stars) {
@@ -58,6 +73,10 @@ function renderStars (stars) {
 
 function renderSpaceship ({ x, y }) {
   renderTriangle(x, y, 20, 'up', 'orange')
+}
+
+function renderShots () {
+
 }
 
 function renderTriangle (x, y, width, direction, color) {
