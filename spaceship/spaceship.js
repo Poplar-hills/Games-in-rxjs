@@ -36,13 +36,15 @@ const spaceshipShots$ = Rx.Observable.merge(
     Rx.Observable.fromEvent(document, 'keypress')
       .filter(e => e.keyCode === SPACE_KEY)
   )
-  .throttleTime(50)
+  .throttleTime(50)     // fire frequency
   .withLatestFrom(spaceship$, (e, spaceship) => ({
     x: spaceship.x,
     y: SPACESHIP_Y
   }))
-  .scan((shots, shot) => shots.concat(shot), [])
-  .do(x => console.log(x))
+  .scan((shots, shot) => shots
+    .concat(shot)
+    .filter(_ => _.y > 0),
+  [])   // get rid of those shots that have flown beyond the screen
 
 // gameSubscription
 const gameSubscription = Rx.Observable.combineLatest(
