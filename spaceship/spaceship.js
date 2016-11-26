@@ -1,6 +1,5 @@
 const GAME_SPEED = 40,
       STAR_NUMBER = 250,
-      SHOT_SPEED = 15,
       SPACE_KEY = 32
 
 const canvas = document.querySelector('#game-canvas'),
@@ -42,11 +41,7 @@ const spaceshipShots$ = Rx.Observable.merge(
     x: spaceship.x,
     y: SPACESHIP_Y
   }))
-  .scan((prev, curr) => {
-    const shots = Array.isArray(prev) ? prev : [prev]
-    return shots.concat(curr)
-  })
-  .startWith([])
+  .scan((shots, shot) => shots.concat(shot), [])
   .do(x => console.log(x))
 
 // gameSubscription
@@ -59,7 +54,7 @@ const gameSubscription = Rx.Observable.combineLatest(
 function renderSense (actors) {
   renderStars(actors.stars)
   renderSpaceship(actors.spaceship)
-  renderShots(actors.spaceshipShots)
+  renderSpaceshipShots(actors.spaceshipShots)
 }
 
 function renderStars (stars) {
@@ -75,8 +70,11 @@ function renderSpaceship ({ x, y }) {
   renderTriangle(x, y, 20, 'up', 'orange')
 }
 
-function renderShots () {
-
+function renderSpaceshipShots (shots) {
+  shots.forEach(_ => {
+    _.y -= 15
+    renderTriangle(_.x, _.y, 5, 'up', 'gold')
+  })
 }
 
 function renderTriangle (x, y, width, direction, color) {
