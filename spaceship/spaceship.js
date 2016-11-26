@@ -29,7 +29,7 @@ const stars$ = Rx.Observable.range(0, STAR_NUMBER)
   Spaceship
 */
 const spaceship$ = Rx.Observable.fromEvent(document, 'mousemove')
-  .smaple(SPEED)
+  .sampleTime(SPEED)
   .map(e => ({ x: e.clientX, y: SPACESHIP_Y }))
   .startWith({ x: w / 2, y: SPACESHIP_Y })
 
@@ -56,12 +56,18 @@ function renderStars (stars) {
   })
 }
 
-function renderSpaceship () {
-
+function renderSpaceship ({ x, y }) {
+  renderTriangle(x, y, 20, 'up', 'orange')
 }
 
-function renderTriangle () {
-
+function renderTriangle (x, y, width, direction, color) {
+  ctx.fillStyle = color
+  ctx.beginPath()
+  ctx.moveTo(x - width, y)
+  ctx.lineTo(x, direction === 'up' ? y - width : y + width)
+  ctx.lineTo(x + width, y)
+  ctx.lineTo(x - width, y)
+  ctx.fill()
 }
 
 /*
