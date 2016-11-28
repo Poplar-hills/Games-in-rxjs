@@ -50,12 +50,13 @@ const spaceshipShots$ = Rx.Observable.merge(
   [])
 
 // enemies
+const oneInThree = oneInEvery(3)
 const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
   .map(() => ({
     x: randomBetween(0, w),
     y: 0,
-    step: randomBetween(4, 6),   // the moving distance in each frame
-    armed: true // oneInEvery(3)   // TODO: return true every n times
+    step: randomBetween(4, 10),   // the moving distance in each frame
+    armed: oneInThree()
   }))
   .scan((enemies, enemy) => {
     if (enemy.armed && !enemy.isDead) {
@@ -145,4 +146,9 @@ function renderTriangle (x, y, width, direction, color) {
 */
 function randomBetween (min, max) {
   return ~~(Math.random() * (max - min + 1)) + min
+}
+
+function oneInEvery (num) {
+  let state = 0
+  return () => state++ % num === 0
 }
