@@ -1,6 +1,7 @@
 const GAME_SPEED = 40,
       STAR_NUMBER = 250,
       ENEMY_FERQ = 500,
+      ENEMY_FIRE_FERQ = 800,
       SPACE_KEY = 32
 
 const canvas = document.querySelector('#game-canvas'),
@@ -31,7 +32,7 @@ const spaceship$ = Rx.Observable.fromEvent(document, 'mousemove')
   .map(e => ({ x: e.clientX, y: SPACESHIP_Y }))
   .startWith({ x: w / 2, y: SPACESHIP_Y })
 
-// spaceshipShots
+// spaceship shots
 const spaceshipShots$ = Rx.Observable.merge(
     Rx.Observable.fromEvent(document, 'click'),
     Rx.Observable.fromEvent(document, 'keypress')
@@ -52,16 +53,26 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
   .map(i => ({
     x: randomBetween(0, w),
     y: 0,
-    step: randomBetween(4, 6)   // the moving distance in each frame
-    // armed: oneInEvery(3)   // TODO: return true every n times
+    step: randomBetween(4, 6),   // the moving distance in each frame
+    armed: true // oneInEvery(3)   // TODO: return true every n times
   }))
-  .scan((enemies, enemy) => enemies
-    .concat(enemy)
-    .filter(_ => _.y < h),
-  [])
+  .scan((enemies, enemy) => {
+    if (enemy.armed && !enemy.isDead) {
+      enemy.shots = []
+      Rx.Observable.interval(ENEMY_FIRE_FERQ)
+        .subscribe(() => {
+          enemy.shots = enemy.shots
+            .concat({ x: enemy.x, y: enemy.y })
+            .filter(_ => _.y < h)
+        })
+    }
+    return enemies
+      .concat(enemy)
+      .filter(_ => _.y < h)
+  }, [])
   .do(x => console.log(x))
 
-// gameSubscription
+// game
 const gameSubscription = Rx.Observable.combineLatest(
     stars$, spaceship$, spaceshipShots$, enemies$,
     (stars, spaceship, spaceshipShots, enemies) => ({
