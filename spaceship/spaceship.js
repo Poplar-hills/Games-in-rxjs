@@ -2,6 +2,7 @@ const GAME_SPEED = 40,
       STAR_NUMBER = 250,
       ENEMY_FERQ = 500,
       ENEMY_FIRE_FERQ = 800,
+      BULLET_SPEED = 15,
       SPACE_KEY = 32
 
 const canvas = document.querySelector('#game-canvas'),
@@ -50,7 +51,7 @@ const spaceshipShots$ = Rx.Observable.merge(
 
 // enemies
 const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
-  .map(i => ({
+  .map(() => ({
     x: randomBetween(0, w),
     y: 0,
     step: randomBetween(4, 6),   // the moving distance in each frame
@@ -70,7 +71,6 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
       .concat(enemy)
       .filter(isVisable)
   }, [])
-  .do(x => console.log(x))
 
 // game
 const gameSubscription = Rx.Observable.combineLatest(
@@ -107,7 +107,7 @@ function renderSpaceship ({ x, y }) {
 
 function renderSpaceshipShots (shots) {
   shots.forEach(_ => {
-    _.y -= 15
+    _.y -= BULLET_SPEED
     renderTriangle(_.x, _.y, 5, 'up', 'orange')
   })
 }
@@ -116,6 +116,13 @@ function renderEnemies (enemies) {
   enemies.forEach(_ => {
     _.y += _.step
     renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
+    
+    if (_.shots) {
+      _.shots.forEach(shot => {
+        shot.y += BULLET_SPEED
+        renderTriangle(shot.x, shot.y, 5, 'down', 'orange')
+      })
+    }
   })
 }
 
