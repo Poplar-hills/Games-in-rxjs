@@ -45,7 +45,7 @@ const spaceshipShots$ = Rx.Observable.merge(
   }))
   .scan((shots, shot) => shots
     .concat(shot)
-    .filter(_ => _.y > 0),  // get rid of those shots that have flown beyond the screen
+    .filter(isVisable),  // get rid of those shots that have flown beyond the screen
   [])
 
 // enemies
@@ -63,12 +63,12 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
         .subscribe(() => {
           enemy.shots = enemy.shots
             .concat({ x: enemy.x, y: enemy.y })
-            .filter(_ => _.y < h)
+            .filter(isVisable)
         })
     }
     return enemies
       .concat(enemy)
-      .filter(_ => _.y < h)
+      .filter(isVisable)
   }, [])
   .do(x => console.log(x))
 
@@ -117,6 +117,10 @@ function renderEnemies (enemies) {
     _.y += _.step
     renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
   })
+}
+
+function isVisable ({ x, y }) {
+  return x >= 0 && x <= w && y >= 0 && y <= h
 }
 
 function renderTriangle (x, y, width, direction, color) {
