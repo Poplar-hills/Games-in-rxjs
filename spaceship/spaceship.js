@@ -70,7 +70,7 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
     }
     return enemies
       .concat(enemy)
-      .filter(isVisable)
+      .filter(_ => isVisable(_) && !_.isDead)
   }, [])
 
 // game
