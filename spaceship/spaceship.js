@@ -1,7 +1,8 @@
 const GAME_SPEED = 40,
       STAR_NUMBER = 250,
-      ENEMY_FERQ = 500,
+      ENEMY_FERQ = 200,
       ENEMY_FIRE_FERQ = 800,
+      SPACESHIP_FIRE_FREQ = 100,
       BULLET_SPEED = 15,
       SPACE_KEY = 32
 
@@ -39,7 +40,7 @@ const spaceshipShots$ = Rx.Observable.merge(
     Rx.Observable.fromEvent(document, 'keypress')
       .filter(e => e.keyCode === SPACE_KEY)
   )
-  .throttleTime(50)     // max fire frequency
+  .throttleTime(SPACESHIP_FIRE_FREQ)     // max fire frequency
   .withLatestFrom(spaceship$, (e, spaceship) => ({
     x: spaceship.x,
     y: SPACESHIP_Y
