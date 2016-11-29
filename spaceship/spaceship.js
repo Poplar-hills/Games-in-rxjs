@@ -55,8 +55,8 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
   .map(() => ({
     x: randomBetween(0, w),
     y: 0,
-    step: randomBetween(4, 10),   // the moving distance in each frame
-    armed: oneInThree()
+    step: randomBetween(4, 12),   // moving speed
+    armed: oneInThree()   // one-third of enemies can fire shot
   }))
   .scan((enemies, enemy) => {
     if (enemy.armed && !enemy.isDead) {
