@@ -113,10 +113,13 @@ function renderSpaceshipShots (shots, enemies) {
     enemies
       .filter(hitBy(_))
       .forEach(enemy => {
+        _.isDestroyed = true
         enemy.isDead = true
       })
 
-    renderTriangle(_.x, _.y, 5, 'up', 'orange')
+    if (!_.isDestroyed) {
+      renderTriangle(_.x, _.y, 5, 'up', 'orange')
+    }
   })
 }
 
