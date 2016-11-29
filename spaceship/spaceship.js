@@ -89,7 +89,7 @@ const gameSubscription = Rx.Observable.combineLatest(
 function renderSense (actors) {
   renderStars(actors.stars)
   renderSpaceship(actors.spaceship)
-  renderSpaceshipShots(actors.spaceshipShots)
+  renderSpaceshipShots(actors.spaceshipShots, actors.enemies)
   renderEnemies(actors.enemies)
 }
 
@@ -106,17 +106,26 @@ function renderSpaceship ({ x, y }) {
   renderTriangle(x, y, 20, 'up', '#A0C800')
 }
 
-function renderSpaceshipShots (shots) {
+function renderSpaceshipShots (shots, enemies) {
   shots.forEach(_ => {
     _.y -= BULLET_SPEED
+
+    enemies
+      .filter(hitBy(_))
+      .forEach(enemy => {
+        enemy.isDead = true
+      })
+
     renderTriangle(_.x, _.y, 5, 'up', 'orange')
   })
 }
 
 function renderEnemies (enemies) {
   enemies.forEach(_ => {
-    _.y += _.step
-    renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
+    if (!_.isDead) {
+      _.y += _.step
+      renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
+    }
     
     if (_.shots) {
       _.shots.forEach(shot => {
@@ -129,6 +138,11 @@ function renderEnemies (enemies) {
 
 function isVisable ({ x, y }) {
   return x >= 0 && x <= w && y >= 0 && y <= h
+}
+
+function hitBy (subject) {
+  return hitter => (subject.x > hitter.x - 10 && subject.x < hitter.x + 10) &&
+    (subject.y > hitter.y - 10 && subject.y < hitter.y + 10)
 }
 
 function renderTriangle (x, y, width, direction, color) {
