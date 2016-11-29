@@ -121,7 +121,7 @@ function renderEnemies (enemies) {
     if (_.shots) {
       _.shots.forEach(shot => {
         shot.y += BULLET_SPEED
-        renderTriangle(shot.x, shot.y, 5, 'down', 'orange')
+        renderTriangle(shot.x, shot.y, 5, 'down', '#00C4FF')
       })
     }
   })
