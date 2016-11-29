@@ -46,17 +46,16 @@ const spaceshipShots$ = Rx.Observable.merge(
   }))
   .scan((shots, shot) => shots
     .concat(shot)
-    .filter(isVisable),  // get rid of those shots that have flown beyond the screen
+    .filter(isVisible),  // get rid of those shots that have flown beyond the screen
   [])
 
 // enemies
-const oneInThree = oneInEvery(3)
 const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
-  .map(() => ({
+  .map(i => ({
     x: randomBetween(0, w),
     y: 0,
     step: randomBetween(4, 12),   // moving speed
-    armed: oneInThree()   // one-third of enemies can fire shot
+    armed: !!(i % 2 === 0)   // half of enemies can fire shots
   }))
   .scan((enemies, enemy) => {
     if (enemy.armed && !enemy.isDead) {
@@ -64,13 +63,13 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
       Rx.Observable.interval(ENEMY_FIRE_FERQ)
         .subscribe(() => {
           enemy.shots = enemy.shots
-            .concat({ x: enemy.x, y: enemy.y })
-            .filter(isVisable)
+            .concat(!enemy.isDead ? { x: enemy.x, y: enemy.y } : {})
+            .filter(isVisible)
         })
     }
     return enemies
       .concat(enemy)
-      .filter(_ => isVisable(_) && !_.isDead)
+      .filter(isVisible)
   }, [])
 
 // game
@@ -107,26 +106,30 @@ function renderSpaceship ({ x, y }) {
 }
 
 function renderSpaceshipShots (shots, enemies) {
-  shots.forEach(_ => {
-    _.y -= BULLET_SPEED
+  shots
+    .filter(_ => !_.isDestroyed)
+    .forEach(_ => {
+      _.y -= BULLET_SPEED
 
-    enemies
-      .filter(hitBy(_))
-      .forEach(enemy => {
-        _.isDestroyed = true
-        enemy.isDead = true
-      })
+      enemies
+        .filter(_ => !_.isDead)
+        .filter(hitBy(_))
+        .forEach(enemy => {
+          _.isDestroyed = true
+          enemy.isDead = true
+        })
 
-    if (!_.isDestroyed) {
-      renderTriangle(_.x, _.y, 5, 'up', 'orange')
-    }
-  })
+      if (!_.isDestroyed) {
+        renderTriangle(_.x, _.y, 5, 'up', 'orange')
+      }
+    })
 }
 
 function renderEnemies (enemies) {
   enemies.forEach(_ => {
+    _.y += _.step
+    
     if (!_.isDead) {
-      _.y += _.step
       renderTriangle(_.x, _.y, 15, 'down', '#FF6946')
     }
     
@@ -139,13 +142,13 @@ function renderEnemies (enemies) {
   })
 }
 
-function isVisable ({ x, y }) {
+function isVisible ({ x, y }) {
   return x >= 0 && x <= w && y >= 0 && y <= h
 }
 
-function hitBy (subject) {
-  return hitter => (subject.x > hitter.x - 10 && subject.x < hitter.x + 10) &&
-    (subject.y > hitter.y - 10 && subject.y < hitter.y + 10)
+function hitBy (ship) {
+  return shot => (ship.x > shot.x - 15 && ship.x < shot.x + 15)
+    && (ship.y > shot.y - 15 && ship.y < shot.y + 15)
 }
 
 function renderTriangle (x, y, width, direction, color) {
@@ -163,9 +166,4 @@ function renderTriangle (x, y, width, direction, color) {
 */
 function randomBetween (min, max) {
   return ~~(Math.random() * (max - min + 1)) + min
-}
-
-function oneInEvery (num) {
-  let state = 0
-  return () => state++ % num === 0
 }
