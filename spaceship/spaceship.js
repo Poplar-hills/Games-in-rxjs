@@ -83,6 +83,7 @@ const gameSubscription = Rx.Observable.combineLatest(
     })
   )
   .sampleTime(GAME_SPEED)
+  .takeWhile(({ spaceship, enemies }) => !gameOver(spaceship, enemies))
   .subscribe(renderSense)
 
 function renderSense (actors) {
@@ -113,7 +114,7 @@ function renderSpaceshipShots (shots, enemies) {
 
       enemies
         .filter(_ => !_.isDead)
-        .filter(hitBy(_))
+        .filter(hit(_))
         .forEach(enemy => {
           _.isDestroyed = true
           enemy.isDead = true
@@ -146,9 +147,9 @@ function isVisible ({ x, y }) {
   return x >= 0 && x <= w && y >= 0 && y <= h
 }
 
-function hitBy (ship) {
-  return shot => (ship.x > shot.x - 15 && ship.x < shot.x + 15)
-    && (ship.y > shot.y - 15 && ship.y < shot.y + 15)
+function hit (obj1) {
+  return obj2 => (obj1.x > obj2.x - 15 && obj1.x < obj2.x + 15)
+    && (obj1.y > obj2.y - 15 && obj1.y < obj2.y + 15)
 }
 
 function renderTriangle (x, y, width, direction, color) {
@@ -159,6 +160,13 @@ function renderTriangle (x, y, width, direction, color) {
   ctx.lineTo(x + width, y)
   ctx.lineTo(x - width, y)
   ctx.fill()
+}
+
+function gameOver (spaceship, enemies) {
+  const hitSpaceship = hit(spaceship)
+  return enemies
+    .filter(_ => !_.isDead)
+    .some(_ => !_.armed ? hitSpaceship(_) : _.shots.some(hitSpaceship))
 }
 
 /*
