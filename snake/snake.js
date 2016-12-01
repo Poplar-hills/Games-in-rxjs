@@ -113,14 +113,13 @@ function randomPosition () {
 
 function moveDot ({ x, y }, direction) {  // update a dot's position according to the direction
   const validateMove = ({ x, y }) => ({ x: circulate(w, x), y: circulate(h, y) }),
-        nextMove = new Map([
-          [LEFT_KEY,  { y, x: x - d }],
-          [RIGHT_KEY, { y, x: x + d }],
-          [UP_KEY,    { x, y: y - d }],
-          [DOWN_KEY,  { x, y: y + d }]
-        ]).get(direction)
-
-  return validateMove(nextMove)
+        moveMap = {
+          [LEFT_KEY]:  { y, x: x - d },
+          [RIGHT_KEY]: { y, x: x + d },
+          [UP_KEY]:    { x, y: y - d },
+          [DOWN_KEY]:  { x, y: y + d }
+        }
+  return validateMove(moveMap[direction])
 }
 
 function isGameOver (snake) {
