@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "unit": "echo \"Error: no test specified\" && exit 1",
+    "snake": "watchify snake/main.js -t babelify --debug -o dist/snake.js && open snake/index.html",
+    "spaceship": "watchify spaceship/main.js -t babelify --debug -o dist/spaceship.js && open spaceship/index.html"
   },
   "author": "",
   "license": "ISC",
