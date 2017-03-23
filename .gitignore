@@ -1,0 +1,28 @@
+# Project specific stuff
+dist/
+.idea/
+
+# npm stuff
+node_modules/
+npm-debug.log
+
+.DS_Store
+
+# Editor Stuff
+*.sublime-project
+*.sublime-workspace
+*.bak
+*~
+.vimrc
+.tern-port
+\#*
+
+# System stuff
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory
+test/unit/coverage/lcov-report
