@@ -1,3 +1,5 @@
+import {Observable} from 'rxjs'
+
 const GAME_SPEED = 40,
       STAR_NUMBER = 250,
       ENEMY_FERQ = 200,
@@ -14,14 +16,14 @@ const w = canvas.width = window.innerWidth,
       SPACESHIP_Y = h - 80
 
 // stars
-const stars$ = Rx.Observable.range(0, STAR_NUMBER)
+const stars$ = Observable.range(0, STAR_NUMBER)
   .map(() => ({
     x: randomBetween(0, w),
     y: randomBetween(0, h),
     size: randomBetween(1, 3)
   }))
   .toArray()
-  .mergeMap(stars => Rx.Observable.interval(GAME_SPEED)
+  .mergeMap(stars => Observable.interval(GAME_SPEED)
     .map(() => {
       stars.forEach(_ => { _.y = _.y <= h ? _.y + 3 : 0 })
       return stars
@@ -29,15 +31,15 @@ const stars$ = Rx.Observable.range(0, STAR_NUMBER)
   )
 
 // spaceship
-const spaceship$ = Rx.Observable.fromEvent(document, 'mousemove')
+const spaceship$ = Observable.fromEvent(document, 'mousemove')
   .sampleTime(GAME_SPEED)
   .map(e => ({ x: e.clientX, y: SPACESHIP_Y }))
   .startWith({ x: w / 2, y: SPACESHIP_Y })
 
 // spaceship shots
-const spaceshipShots$ = Rx.Observable.merge(
-    Rx.Observable.fromEvent(document, 'click'),
-    Rx.Observable.fromEvent(document, 'keypress')
+const spaceshipShots$ = Observable.merge(
+    Observable.fromEvent(document, 'click'),
+    Observable.fromEvent(document, 'keypress')
       .filter(e => e.keyCode === SPACE_KEY)
   )
   .throttleTime(SPACESHIP_FIRE_FREQ)     // max fire frequency
@@ -51,7 +53,7 @@ const spaceshipShots$ = Rx.Observable.merge(
   [])
 
 // enemies
-const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
+const enemies$ = Observable.interval(ENEMY_FERQ)
   .map(i => ({
     x: randomBetween(0, w),
     y: 0,
@@ -61,7 +63,7 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
   .scan((enemies, enemy) => {
     if (enemy.armed && !enemy.isDead) {
       enemy.shots = []
-      Rx.Observable.interval(ENEMY_FIRE_FERQ)
+      Observable.interval(ENEMY_FIRE_FERQ)
         .subscribe(() => {
           enemy.shots = enemy.shots
             .concat(!enemy.isDead ? { x: enemy.x, y: enemy.y } : {})
@@ -74,7 +76,7 @@ const enemies$ = Rx.Observable.interval(ENEMY_FERQ)
   }, [])
 
 // game
-const gameSubscription = Rx.Observable.combineLatest(
+const gameSubscription = Observable.combineLatest(
     stars$, spaceship$, spaceshipShots$, enemies$,
     (stars, spaceship, spaceshipShots, enemies) => ({
       stars,

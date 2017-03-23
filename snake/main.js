@@ -1,5 +1,8 @@
-const { prop, last, equals, cond, gt, lt, always, T, identity } = R,
-      containedBy = R.flip(R.contains)
+import {Observable, Subject} from 'rxjs'
+import {prop, last, equals, cond, gt, lt, always, T, identity, flip,
+contains} from 'ramda'
+
+const containedBy = flip(contains)
 
 const canvas = document.querySelector('#game-canvas'),
       ctx = canvas.getContext('2d'),
@@ -16,9 +19,9 @@ const LEFT_KEY = 97,    // a
       DOWN_KEY = 115,   // s
       INIT_DIRECTION = RIGHT_KEY
 
-const foodProxy$ = new Rx.Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
+const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
-const direction$ = Rx.Observable.fromEvent(document, 'keypress')
+const direction$ = Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
   .map(prop('keyCode'))
   .filter(containedBy([LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY]))
@@ -36,13 +39,13 @@ const direction$ = Rx.Observable.fromEvent(document, 'keypress')
 ----U----L--------------D---------R----
 */
 
-const snake$ = Rx.Observable.range(1, INIT_SNAKE_LENGTH)
-  .map(i => ({ x: w / 2 + i * d, y: h / 2 }))
+const snake$ = Observable.range(1, INIT_SNAKE_LENGTH)
+  .map(i => ({x: w / 2 + i * d, y: h / 2}))
   .toArray()
-  .mergeMap(snake => Rx.Observable.interval(MOVE_SPEED)
+  .mergeMap(snake => Observable.interval(MOVE_SPEED)
     .withLatestFrom(
       direction$, foodProxy$.startWith(INIT_FOOD_POSITION),
-      (i, direction, food) => ({ direction, snake, food }))
+      (i, direction, food) => ({direction, snake, food}))
     .scan(crawl, {snake, food: INIT_FOOD_POSITION})
   )
   .map(prop('snake'))
@@ -93,11 +96,11 @@ function crawl (prev, curr) {
   }
 }
 
-const gameSubscription = Rx.Observable.combineLatest(
+const gameSubscription = Observable.combineLatest(
     snake$, food$,
-    (snake, food) => ({ snake, food })
+    (snake, food) => ({snake, food})
   )
-  .takeWhile(({ snake }) => !isGameOver(snake))
+  .takeWhile(({snake}) => !isGameOver(snake))
   .subscribe(renderSence, null, () => {
     renderGameText('GAME OVER', '#FF6946')
     cleanUp()
@@ -111,13 +114,13 @@ function randomPosition () {
   }
 }
 
-function moveDot ({ x, y }, direction) {  // update a dot's position according to the direction
-  const validateMove = ({ x, y }) => ({ x: circulate(w, x), y: circulate(h, y) }),
+function moveDot ({x, y}, direction) {   // update a dot's position according to the direction
+  const validateMove = ({x, y}) => ({x: circulate(w, x), y: circulate(h, y)}),
         moveMap = {
-          [LEFT_KEY]:  { y, x: x - d },
-          [RIGHT_KEY]: { y, x: x + d },
-          [UP_KEY]:    { x, y: y - d },
-          [DOWN_KEY]:  { x, y: y + d }
+          [LEFT_KEY]:  {y, x: x - d},
+          [RIGHT_KEY]: {y, x: x + d},
+          [UP_KEY]:    {x, y: y - d},
+          [DOWN_KEY]:  {x, y: y + d}
         }
   return validateMove(moveMap[direction])
 }
@@ -139,7 +142,7 @@ function renderSnake (snake) {
 }
 
 function renderDot (color, radius = d / 2) {
-  return ({ x, y }) => {
+  return ({x, y}) => {
     ctx.beginPath()
     ctx.arc(x, y, radius, 0, Math.PI * 2)
     ctx.fillStyle = color
