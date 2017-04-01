@@ -19,6 +19,7 @@
     "babel-preset-es2015": "^6.24.0",
     "babel-register": "^6.24.0",
     "babelify": "^7.3.0",
+    "browser-env": "^2.0.27",
     "browserify": "^14.1.0",
     "watchify": "^3.9.0"
   },
@@ -28,10 +29,13 @@
     ]
   },
   "ava": {
-    "require": ["babel-register"],
+    "require": [
+      "babel-register",
+      "./test/setup-browser-env.js"
+    ],
     "babel": "inherit",
     "files": [
-      "**/spec.js",
+      "./test/*.spec.js",
       "!node_modules"
     ]
   }
