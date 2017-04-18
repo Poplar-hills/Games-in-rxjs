@@ -1,7 +1,9 @@
-import test from 'ava'
+import {expect} from 'chai'
 
-test(t => {
-  t.deepEqual([1, 2], [1, 2])
+describe('snake', () => {
+  it('a test for testing', () => {
+    const given = 'foo'
+    const result = given + '-bar'
+    expect(result).to.equal('foo-bar')
+  })
 })
-
-
