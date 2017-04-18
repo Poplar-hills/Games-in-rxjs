@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/*.spec.js --watch --require babel-register",
+    "test": "mocha ./test/*.spec.js --reporter landing --watch --require babel-register",
     "snake": "watchify snake/main.js -t babelify --debug -o dist/snake.js",
     "spaceship": "watchify spaceship/main.js -t babelify --debug -o dist/spaceship.js"
   },
