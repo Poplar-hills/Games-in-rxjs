@@ -1,6 +1,6 @@
 import {Observable, Subject} from 'rxjs'
-import {prop, last, equals, cond, gt, lt, always, T, identity, flip,
-contains} from 'ramda'
+import {circulate, randomBetween, atSamePosition} from './utils.js'
+import {prop, last, equals, flip, contains} from 'ramda'
 
 const containedBy = flip(contains)
 
@@ -115,7 +115,7 @@ function randomPosition () {
 }
 
 function moveDot ({x, y}, direction) {   // update a dot's position according to the direction
-  const validateMove = ({x, y}) => ({x: circulate(w, x), y: circulate(h, y)}),
+  const validateMove = ({x, y}) => ({x: circulate(w, x, d / 2), y: circulate(h, y, d / 2)}),
         moveMap = {
           [LEFT_KEY]:  {y, x: x - d},
           [RIGHT_KEY]: {y, x: x + d},
@@ -164,23 +164,4 @@ function renderGameText (text, color) {
 function cleanUp () {
   gameSubscription.unsubscribe()
   foodSubscription.unsubscribe()
-}
-
-/*
-  Utils
-*/
-function circulate (max, value) {
-  return cond([
-    [lt(max), always(0 + d / 2)],   // return d/2 if greater than max
-    [gt(0), always(max - d / 2)],   // return max - d/2 if less than 0
-    [T, identity]
-  ])(value)
-}
-
-function randomBetween (min, max) {
-  return ~~(Math.random() * (max - min + 1)) + min
-}
-
-function atSamePosition (dotA, dotB) {
-  return dotA.x === dotB.x && dotA.y === dotB.y
 }
