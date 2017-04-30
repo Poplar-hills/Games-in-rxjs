@@ -1,5 +1,5 @@
 import {Observable, Subject} from 'rxjs'
-import {circulate, randomBetween, atSamePosition} from './utils.js'
+import {circulateMove, randomBetween, hit} from './utils.js'
 import {prop, last, equals, flip, contains} from 'ramda'
 
 const containedBy = flip(contains)
@@ -19,6 +19,8 @@ const LEFT_KEY = 97,    // a
       DOWN_KEY = 115,   // s
       INIT_DIRECTION = RIGHT_KEY
 
+const circulateX = circulateMove(d / 2, 0, w)
+const circulateY = circulateMove(d / 2, 0, h)
 const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
 const direction$ = Observable.fromEvent(document, 'keypress')
@@ -66,7 +68,7 @@ f1--------f1------------------------f2---------------------  foodProxy$
 const food$ = snake$
   .map(last)
   .scan((prevFood, snakeHead) => {
-    return atSamePosition(prevFood, snakeHead) ? randomPosition() : prevFood
+    return hit(prevFood, snakeHead) ? randomPosition() : prevFood
   }, INIT_FOOD_POSITION)
   .distinctUntilChanged()
   .share()    // food$ is also subscribed twice
@@ -114,13 +116,13 @@ function randomPosition () {
   }
 }
 
-function moveDot ({x, y}, direction) {   // update a dot's position according to the direction
-  const validateMove = ({x, y}) => ({x: circulate(w, x, d / 2), y: circulate(h, y, d / 2)}),
+function moveDot ({x, y}, direction) {
+  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)}),
         moveMap = {
-          [LEFT_KEY]:  {y, x: x - d},
-          [RIGHT_KEY]: {y, x: x + d},
+          [LEFT_KEY]:  {x: x - d, y},
+          [RIGHT_KEY]: {x: x + d, y},
           [UP_KEY]:    {x, y: y - d},
-          [DOWN_KEY]:  {x, y: y + d}
+          [DOWN_KEY]:  {x, y: y + d}  
         }
   return validateMove(moveMap[direction])
 }
@@ -128,7 +130,7 @@ function moveDot ({x, y}, direction) {   // update a dot's position according to
 function isGameOver (snake) {
   const snakeHead = last(snake),
         snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
-  return snakeBody.some(bodyDot => atSamePosition(bodyDot, snakeHead))
+  return snakeBody.some(bodyDot => hit(bodyDot, snakeHead))
 }
 
 function renderSence (actors) {

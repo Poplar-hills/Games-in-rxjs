@@ -1,19 +1,17 @@
 import {cond, gt, lt, always, T, identity} from 'ramda'
 
-function circulate (max, value, r) {
-  return cond([
-    [lt(max), always(r)],   // return d/2 if greater than max
-    [gt(0), always(max - r)],   // return max - d/2 if less than 0
-    [T, identity]
-  ])(value)
-}
+const circulateMove = (offset, min, max) => cond([
+  [lt(max), always(offset)],
+  [gt(0), always(max - offset)],
+  [T, identity]
+])
 
-function randomBetween (min, max) {
+const randomBetween = (min, max) => {
   return ~~(Math.random() * (max - min + 1)) + min
 }
 
-function atSamePosition (dotA, dotB) {
+const hit = (dotA, dotB) => {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
 
-export {circulate, randomBetween, atSamePosition}
+export {circulateMove, randomBetween, hit}
