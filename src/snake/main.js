@@ -21,9 +21,7 @@ const LEFT_KEY = 97,    // a
 
 const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
-const keypres$ = Observable.fromEvent(document, 'keypress')
-
-export const direction$ = keypress$
+const direction$ = Observable.fromEvent(document, 'keypress')
   .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
   .map(prop('keyCode'))
   .filter(containedBy([LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY]))
