@@ -1,6 +1,6 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains} from 'ramda'
-import {circulateMove, randomBetween, hit} from './utils.js'
+import {circulateMove, randomBetween, collide} from './utils.js'
 import {renderSence, renderGameText} from './renderer.js'
 import * as c from './config.js'
 
@@ -55,7 +55,7 @@ f1--------f1------------------------f2---------------------  foodProxy$
 const food$ = snake$
   .map(last)
   .scan((prevFood, snakeHead) => {
-    return hit(prevFood, snakeHead) ? randomPosition() : prevFood
+    return collide(prevFood, snakeHead) ? randomPosition() : prevFood
   }, firstFoodPosition)
   .distinctUntilChanged()
   .share()    // food$ is also subscribed twice
@@ -117,7 +117,7 @@ function moveDot ({x, y}, direction) {
 function isGameOver (snake) {
   const snakeHead = last(snake)
   const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
-  return snakeBody.some(bodyDot => hit(bodyDot, snakeHead))
+  return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
 function cleanUp () {

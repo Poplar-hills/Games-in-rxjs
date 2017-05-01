@@ -10,8 +10,8 @@ const randomBetween = (min, max) => {
   return ~~(Math.random() * (max - min + 1)) + min
 }
 
-const hit = (dotA, dotB) => {
+const collide = (dotA, dotB) => {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
 
-export {circulateMove, randomBetween, hit}
+export {circulateMove, randomBetween, collide}

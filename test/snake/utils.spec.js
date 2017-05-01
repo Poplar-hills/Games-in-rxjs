@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {circulateMove, randomBetween, hit} from '../../src/snake/utils.js'
+import {circulateMove, randomBetween, collide} from '../../src/snake/utils.js'
 
 describe('Utils', () => {
   const min = 0
@@ -24,17 +24,17 @@ describe('Utils', () => {
     expect(resultPos).to.equal(40)
   })
 
-  it('should determine if two sets of coordinates are equal', () => {
+  it('should determine if two objects collide', () => {
     const c1 = {x: 4, y: 10}
     const c2 = {x: 4, y: 10}
-    const result = hit(c1, c2)
+    const result = collide(c1, c2)
     expect(result).to.be.true
   })
 
-  it('should determine if two sets of coordinates are not equal', () => {
+  it('should determine if two objects collide', () => {
     const c1 = {x: 4, y: 10}
     const c2 = {x: 4, y: 20}
-    const result = hit(c1, c2)
+    const result = collide(c1, c2)
     expect(result).to.be.false
   })
 })
