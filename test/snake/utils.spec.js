@@ -24,12 +24,6 @@ describe('Utils', () => {
     expect(resultPos).to.equal(40)
   })
 
-  it('should generate a value within the range', () => {
-    const randomValue = randomBetween(min, max)
-    expect(randomValue).to.be.above(0)
-    expect(randomValue).to.be.below(100)
-  })
-
   it('should determine if two sets of coordinates are equal', () => {
     const c1 = {x: 4, y: 10}
     const c2 = {x: 4, y: 10}
