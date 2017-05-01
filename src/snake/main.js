@@ -8,7 +8,6 @@ const containedBy = flip(contains)
 const circulateX = circulateMove(c.dot_size / 2, 0, c.w)
 const circulateY = circulateMove(c.dot_size / 2, 0, c.h)
 const firstFoodPosition = randomPosition()
-
 const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
 const direction$ = Observable.fromEvent(document, 'keypress')
@@ -74,10 +73,10 @@ const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed
 */
 
 function crawl (prev, curr) {
-  const oldSnakeHead = last(prev.snake),
-        newSnakeHead = moveDot(oldSnakeHead, curr.direction),
-        hasCaughtFood = !equals(prev.food, curr.food),
-        newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+  const oldSnakeHead = last(prev.snake)
+  const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
+  const hasCaughtFood = !equals(prev.food, curr.food)
+  const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
 
   return {
     snake: newSnakeBody.concat(newSnakeHead),
@@ -105,19 +104,19 @@ function randomPosition () {
 }
 
 function moveDot ({x, y}, direction) {
-  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)}),
-        moveMap = {
-          [c.key_left]:  {x: x - c.dot_size, y},
-          [c.key_right]: {x: x + c.dot_size, y},
-          [c.key_up]:    {x, y: y - c.dot_size},
-          [c.key_down]:  {x, y: y + c.dot_size}  
-        }
+  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
+  const moveMap = {
+    [c.key_left]:  {x: x - c.dot_size, y},
+    [c.key_right]: {x: x + c.dot_size, y},
+    [c.key_up]:    {x, y: y - c.dot_size},
+    [c.key_down]:  {x, y: y + c.dot_size}  
+  }
   return validateMove(moveMap[direction])
 }
 
 function isGameOver (snake) {
-  const snakeHead = last(snake),
-        snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
+  const snakeHead = last(snake)
+  const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => hit(bodyDot, snakeHead))
 }
 

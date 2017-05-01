@@ -1,10 +1,10 @@
 import * as c from './config.js'
 
-const gameCanvas = document.querySelector('#game-canvas'),
-      ctx = gameCanvas.getContext('2d')
+const canvas = document.querySelector('#game-canvas')
+const ctx = canvas.getContext('2d')
 
-gameCanvas.width = c.w
-gameCanvas.height = c.h
+canvas.width = c.w
+canvas.height = c.h
 
 export const renderDot = (color, radius = c.dot_size / 2) => {
   return ({x, y}) => {
