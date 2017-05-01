@@ -2,11 +2,12 @@ import * as c from './config.js'
 
 const canvas = document.querySelector('#game-canvas')
 const ctx = canvas.getContext('2d')
+const dot_r = c.dot_size / 2
 
 canvas.width = c.w
 canvas.height = c.h
 
-export const renderDot = (color, radius = c.dot_size / 2) => {
+export const renderDot = (color, radius = dot_r) => {
   return ({x, y}) => {
     ctx.beginPath()
     ctx.arc(x, y, radius, 0, Math.PI * 2)
@@ -19,7 +20,7 @@ export const renderSnake = snake => {
   snake.forEach(renderDot('orange'))
 }
 
-export const renderFood = renderDot('#A0C800', c.dot_size / 2 + 2)
+export const renderFood = renderDot('#A0C800', dot_r + 2)
 
 export const renderSence = actors => {
   ctx.clearRect(0, 0, c.w, c.h) // clear the canvas first

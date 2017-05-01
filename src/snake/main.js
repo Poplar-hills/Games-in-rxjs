@@ -4,9 +4,10 @@ import {circulateMove, randomBetween, collide} from './utils.js'
 import {renderSence, renderGameText} from './renderer.js'
 import * as c from './config.js'
 
+const dot_r = c.dot_size / 2
 const containedBy = flip(contains)
-const circulateX = circulateMove(c.dot_size / 2, 0, c.w)
-const circulateY = circulateMove(c.dot_size / 2, 0, c.h)
+const circulateX = circulateMove(dot_r, 0, c.w)
+const circulateY = circulateMove(dot_r, 0, c.h)
 const firstFoodPosition = randomPosition()
 const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
@@ -60,8 +61,6 @@ const food$ = snake$
   .distinctUntilChanged()
   .share()    // food$ is also subscribed twice
 
-const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
-
 /*
 -----snake0[]--snake1[]--snake2[]--snake3[]----  snake$
                       map
@@ -71,6 +70,18 @@ const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed
                distinctUntilChanged       
 -----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
 */
+
+const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
+
+const gameSubscription = Observable.combineLatest(
+    snake$, food$,
+    (snake, food) => ({snake, food})
+  )
+  .takeWhile(({snake}) => !isGameOver(snake))
+  .subscribe(renderSence, null, () => {
+    renderGameText('GAME OVER', '#FF6946')
+    cleanUp()
+  })
 
 function crawl (prev, curr) {
   const oldSnakeHead = last(prev.snake)
@@ -85,18 +96,8 @@ function crawl (prev, curr) {
   }
 }
 
-const gameSubscription = Observable.combineLatest(
-    snake$, food$,
-    (snake, food) => ({snake, food})
-  )
-  .takeWhile(({snake}) => !isGameOver(snake))
-  .subscribe(renderSence, null, () => {
-    renderGameText('GAME OVER', '#FF6946')
-    cleanUp()
-  })
-
 function randomPosition () {
-  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - c.dot_size / 2
+  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - dot_r
   return {
     x: randomCoordinate(c.w / c.dot_size - 1),
     y: randomCoordinate(c.h / c.dot_size - 1)
