@@ -1,7 +1,7 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils.js'
-import {renderSence, renderGameText} from './renderer.js'
+import {renderSence, renderGameOverScene} from './renderer.js'
 import * as c from './config.js'
 
 const dot_r = c.dot_size / 2
@@ -79,7 +79,7 @@ const gameSubscription = Observable.combineLatest(
   )
   .takeWhile(({snake}) => !isGameOver(snake))
   .subscribe(renderSence, null, () => {
-    renderGameText('GAME OVER', '#FF6946')
+    renderGameOverScene()
     cleanUp()
   })
 
@@ -107,10 +107,10 @@ function randomPosition () {
 function moveDot ({x, y}, direction) {
   const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
   const moveMap = {
-    [c.key_left]:  {x: x - c.dot_size, y},
-    [c.key_right]: {x: x + c.dot_size, y},
     [c.key_up]:    {x, y: y - c.dot_size},
-    [c.key_down]:  {x, y: y + c.dot_size}  
+    [c.key_left]:  {x: x - c.dot_size, y},
+    [c.key_down]:  {x, y: y + c.dot_size},
+    [c.key_right]: {x: x + c.dot_size, y}
   }
   return validateMove(moveMap[direction])
 }
