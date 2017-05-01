@@ -1,36 +1,24 @@
 import {Observable, Subject} from 'rxjs'
-import {circulateMove, randomBetween, hit} from './utils.js'
 import {prop, last, equals, flip, contains} from 'ramda'
+import {circulateMove, randomBetween, hit} from './utils.js'
+import {renderSence, renderGameText} from './renderer.js'
+import * as c from './config.js'
 
 const containedBy = flip(contains)
+const circulateX = circulateMove(c.dot_size / 2, 0, c.w)
+const circulateY = circulateMove(c.dot_size / 2, 0, c.h)
+const firstFoodPosition = randomPosition()
 
-const canvas = document.querySelector('#game-canvas'),
-      ctx = canvas.getContext('2d'),
-      w = canvas.width = 615,
-      h = canvas.height = 405,
-      d = 15,           // dot's diameter
-      MOVE_SPEED = 100,
-      INIT_SNAKE_LENGTH = 5,
-      INIT_FOOD_POSITION = randomPosition()
-
-const LEFT_KEY = 97,    // a
-      UP_KEY = 119,     // w
-      RIGHT_KEY = 100,  // d
-      DOWN_KEY = 115,   // s
-      INIT_DIRECTION = RIGHT_KEY
-
-const circulateX = circulateMove(d / 2, 0, w)
-const circulateY = circulateMove(d / 2, 0, h)
 const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
 
 const direction$ = Observable.fromEvent(document, 'keypress')
-  .sampleTime(MOVE_SPEED) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the MOVE_SPEED)
+  .sampleTime(c.move_speed) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the move_speed)
   .map(prop('keyCode'))
-  .filter(containedBy([LEFT_KEY, UP_KEY, RIGHT_KEY, DOWN_KEY]))
+  .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
   .scan((prev, curr) => {
     const inSuccession = (...arr) => [prev, curr].every(containedBy(arr))
-    return (inSuccession(LEFT_KEY, RIGHT_KEY) || inSuccession(UP_KEY, DOWN_KEY)) ? prev : curr
-  }, INIT_DIRECTION)
+    return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
+  }, c.init_direction)
   .distinctUntilChanged()
 
 /*
@@ -41,14 +29,14 @@ const direction$ = Observable.fromEvent(document, 'keypress')
 ----U----L--------------D---------R----
 */
 
-const snake$ = Observable.range(1, INIT_SNAKE_LENGTH)
-  .map(i => ({x: w / 2 + i * d, y: h / 2}))
+const snake$ = Observable.range(1, c.init_length)
+  .map(i => ({x: c.w / 2 + i * c.dot_size, y: c.h / 2}))
   .toArray()
-  .mergeMap(snake => Observable.interval(MOVE_SPEED)
+  .mergeMap(snake => Observable.interval(c.move_speed)
     .withLatestFrom(
-      direction$, foodProxy$.startWith(INIT_FOOD_POSITION),
+      direction$, foodProxy$.startWith(firstFoodPosition),
       (i, direction, food) => ({direction, snake, food}))
-    .scan(crawl, {snake, food: INIT_FOOD_POSITION})
+    .scan(crawl, {snake, food: firstFoodPosition})
   )
   .map(prop('snake'))
   .share()    // snake$ needs to be 'hot' as it is subscribed twice
@@ -69,7 +57,7 @@ const food$ = snake$
   .map(last)
   .scan((prevFood, snakeHead) => {
     return hit(prevFood, snakeHead) ? randomPosition() : prevFood
-  }, INIT_FOOD_POSITION)
+  }, firstFoodPosition)
   .distinctUntilChanged()
   .share()    // food$ is also subscribed twice
 
@@ -109,20 +97,20 @@ const gameSubscription = Observable.combineLatest(
   })
 
 function randomPosition () {
-  const randomCoordinate = max => randomBetween(1, max) * d - d / 2
+  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - c.dot_size / 2
   return {
-    x: randomCoordinate(w / d - 1),
-    y: randomCoordinate(h / d - 1)
+    x: randomCoordinate(c.w / c.dot_size - 1),
+    y: randomCoordinate(c.h / c.dot_size - 1)
   }
 }
 
 function moveDot ({x, y}, direction) {
   const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)}),
         moveMap = {
-          [LEFT_KEY]:  {x: x - d, y},
-          [RIGHT_KEY]: {x: x + d, y},
-          [UP_KEY]:    {x, y: y - d},
-          [DOWN_KEY]:  {x, y: y + d}  
+          [c.key_left]:  {x: x - c.dot_size, y},
+          [c.key_right]: {x: x + c.dot_size, y},
+          [c.key_up]:    {x, y: y - c.dot_size},
+          [c.key_down]:  {x, y: y + c.dot_size}  
         }
   return validateMove(moveMap[direction])
 }
@@ -131,36 +119,6 @@ function isGameOver (snake) {
   const snakeHead = last(snake),
         snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => hit(bodyDot, snakeHead))
-}
-
-function renderSence (actors) {
-  ctx.clearRect(0, 0, w, h)   // clear the canvas first
-  renderSnake(actors.snake)
-  renderFood(actors.food)
-}
-
-function renderSnake (snake) {
-  snake.forEach(renderDot('orange'))
-}
-
-function renderDot (color, radius = d / 2) {
-  return ({x, y}) => {
-    ctx.beginPath()
-    ctx.arc(x, y, radius, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.fill()
-  }
-}
-
-function renderFood (food) {
-  renderDot('#A0C800', d / 2 + 2)(food)
-}
-
-function renderGameText (text, color) {
-  ctx.font = '50px Arial'
-  const textWidth = ctx.measureText(text).width
-  ctx.fillStyle = color
-  ctx.fillText(text, w / 2 - textWidth / 2, h / 2 - 40)
 }
 
 function cleanUp () {
