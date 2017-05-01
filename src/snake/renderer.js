@@ -28,10 +28,16 @@ export const renderSence = actors => {
   renderFood(actors.food)
 }
 
+const renderText = (font, color, text, offsetY) => {
+  const getTextWidth = text => ctx.measureText(text).width
+  ctx.font = font
+  ctx.fillStyle = color
+  ctx.fillText(text, (c.w - getTextWidth(text)) / 2, c.h / 2 + offsetY)
+}
+
 export const renderGameOverScene = () => {
-  const text = 'GAME OVER'
-  ctx.font = '50px Arial'
-  const textWidth = ctx.measureText(text).width
-  ctx.fillStyle = '#FF6946'
-  ctx.fillText(text, (c.w - textWidth) / 2, c.h / 2 - 40)
+  const text1 = 'GAME OVER'
+  const test2 = '👉 Press return to restart 👈'
+  renderText('50px Arial', '#FF6946', text1, 40)
+  renderText('25px fantasy', '#61ADF8', text2, -40)
 }
