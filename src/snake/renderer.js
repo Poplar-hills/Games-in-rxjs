@@ -3,6 +3,10 @@ import * as c from './config.js'
 const canvas = document.querySelector('#game-canvas')
 const ctx = canvas.getContext('2d')
 const dot_r = c.dot_size / 2
+const sceneText = {
+  opening: ["Let's play some Snake", '🐍 Press any key to start 🐍'],
+  ending: ['GAME OVER', '👉 Press any key to restart 👈']
+}
 
 canvas.width = c.w
 canvas.height = c.h
@@ -35,14 +39,7 @@ const renderText = (font, color, text, offsetY) => {
   ctx.fillText(text, (c.w - getTextWidth(text)) / 2, c.h / 2 + offsetY)
 }
 
-export const renderEnding = () => {
-  const text1 = 'GAME OVER'
-  const text2 = '👉 Press any key to restart 👈'
-  renderText('50px Arial', '#FF6946', text1, -40)
-  renderText('25px fantasy', '#61ADF8', text2, 40)
-}
-
-export const renderOpening = () => {
-  const text = "🐍 Press any key to start 🐍"
-  renderText('30px fantasy', '#FF6946', text, 0)
+export const renderScene = type => {
+  renderText('40px Arial', '#FF6946', sceneText[type][0], -40)
+  renderText('25px fantasy', '#61ADF8', sceneText[type][1], 40)
 }

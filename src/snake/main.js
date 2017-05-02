@@ -1,7 +1,7 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils.js'
-import {renderGame, renderOpening, renderEnding} from './renderer.js'
+import {renderGame, renderScene} from './renderer.js'
 import * as c from './config.js'
 
 const dot_r = c.dot_size / 2
@@ -9,6 +9,7 @@ const containedBy = flip(contains)
 const circulateX = circulateMove(dot_r, 0, c.w)
 const circulateY = circulateMove(dot_r, 0, c.h)
 
+renderScene('opening')
 run()
 
 function run () {
@@ -83,7 +84,7 @@ function run () {
     )
     .takeWhile(({snake}) => !isGameOver(snake))
     .subscribe(renderGame, null, () => {
-      renderEnding()
+      renderScene('ending')
       cleanUp(foodSub, gameSub)
       run()
     })
