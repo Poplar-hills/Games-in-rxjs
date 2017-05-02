@@ -1,7 +1,7 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils.js'
-import {renderSence, renderGameOverScene} from './renderer.js'
+import {renderGame, renderGameOverScene} from './renderer.js'
 import * as c from './config.js'
 
 const dot_r = c.dot_size / 2
@@ -82,7 +82,7 @@ function run () {
       (snake, food) => ({snake, food})
     )
     .takeWhile(({snake}) => !isGameOver(snake))
-    .subscribe(renderSence, null, () => {
+    .subscribe(renderGame, null, () => {
       renderGameOverScene()
       cleanUp(foodSubscription, gameSubscription)
       run()

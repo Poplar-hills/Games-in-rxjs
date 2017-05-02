@@ -22,7 +22,7 @@ const renderSnake = snake => {
 
 const renderFood = renderDot('#A0C800', dot_r + 2)
 
-export const renderSence = actors => {
+export const renderGame = actors => {
   ctx.clearRect(0, 0, c.w, c.h) // clear the canvas first
   renderSnake(actors.snake)
   renderFood(actors.food)
