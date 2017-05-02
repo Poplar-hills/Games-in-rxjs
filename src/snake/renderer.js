@@ -37,7 +37,7 @@ const renderText = (font, color, text, offsetY) => {
 
 export const renderGameOverScene = () => {
   const text1 = 'GAME OVER'
-  const test2 = '👉 Press return to restart 👈'
-  renderText('50px Arial', '#FF6946', text1, 40)
-  renderText('25px fantasy', '#61ADF8', text2, -40)
+  const text2 = '👉 Press return to restart 👈'
+  renderText('50px Arial', '#FF6946', text1, -40)
+  renderText('25px fantasy', '#61ADF8', text2, 40)
 }
