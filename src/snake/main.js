@@ -1,7 +1,7 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils.js'
-import {renderGame, renderGameOverScene} from './renderer.js'
+import {renderGame, renderOpening, renderEnding} from './renderer.js'
 import * as c from './config.js'
 
 const dot_r = c.dot_size / 2
@@ -75,16 +75,16 @@ function run () {
   -----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
   */
 
-  const foodSubscription = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
+  const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
-  const gameSubscription = Observable.combineLatest(
+  const gameSub = Observable.combineLatest(
       snake$, food$,
       (snake, food) => ({snake, food})
     )
     .takeWhile(({snake}) => !isGameOver(snake))
     .subscribe(renderGame, null, () => {
-      renderGameOverScene()
-      cleanUp(foodSubscription, gameSubscription)
+      renderEnding()
+      cleanUp(foodSub, gameSub)
       run()
     })
 }

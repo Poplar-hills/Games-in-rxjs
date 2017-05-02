@@ -35,9 +35,14 @@ const renderText = (font, color, text, offsetY) => {
   ctx.fillText(text, (c.w - getTextWidth(text)) / 2, c.h / 2 + offsetY)
 }
 
-export const renderGameOverScene = () => {
+export const renderEnding = () => {
   const text1 = 'GAME OVER'
   const text2 = '👉 Press any key to restart 👈'
   renderText('50px Arial', '#FF6946', text1, -40)
   renderText('25px fantasy', '#61ADF8', text2, 40)
+}
+
+export const renderOpening = () => {
+  const text = "🐍 Press any key to start 🐍"
+  renderText('30px fantasy', '#FF6946', text, 0)
 }
