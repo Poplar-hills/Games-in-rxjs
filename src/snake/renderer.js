@@ -1,4 +1,4 @@
-import * as c from './config.js'
+import * as c from './config'
 
 const canvas = document.querySelector('#game-canvas')
 const ctx = canvas.getContext('2d')

@@ -1,5 +1,5 @@
-import run from './game.js'
-import {renderScene} from './renderer.js'
+import run from './game'
+import {renderScene} from './renderer'
 
 renderScene('opening')
 run()
