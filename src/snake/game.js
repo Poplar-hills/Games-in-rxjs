@@ -1,5 +1,5 @@
 import {Observable, Subject} from 'rxjs'
-import {prop, last, equals, flip, contains} from 'ramda'
+import {prop, last, equals, flip, contains, compose, multiply, length} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils'
 import {renderGame} from './renderer'
 import * as c from './config'
@@ -41,7 +41,7 @@ export default function run () {
       .scan(crawl, {snake, food: firstFoodPosition})
     )
     .map(prop('snake'))
-    .share()    // snake$ needs to be 'hot' as it is subscribed twice
+    .share()    // snake$ needs to be 'hot' as it will be subscribed multiple times
 
   /*
   ----------0------------1------------2------------3---------  interval$
@@ -73,11 +73,14 @@ export default function run () {
   -----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
   */
 
+  const scoreboard$ = snake$
+    .map(compose(multiply(c.score_value), length))
+
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
 
   const gameSub = Observable.combineLatest(
-      snake$, food$,
-      (snake, food) => ({snake, food})
+      snake$, food$, scoreboard$,
+      (snake, food, scoreboard) => ({snake, food, scoreboard})
     )
     .takeWhile(({snake}) => !isGameOver(snake))
     .subscribe(renderGame, null, () => {
