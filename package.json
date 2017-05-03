@@ -5,12 +5,12 @@
   "main": "index.js",
   "scripts": {
     "test": "mocha ./test/**/*.spec.js --reporter landing --watch --require babel-register",
-    "snake": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/snake/main.js -t babelify --debug -o dist/snake.js",
-    "spaceship": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/spaceship/main.js -t babelify --debug -o dist/spaceship.js"
+    "snake": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/snake/main.js -t babelify --debug -o dist/snake.js -v",
+    "spaceship": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/spaceship/main.js -t babelify --debug -o dist/spaceship.js -v"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
+  "dependencies": { 
     "ramda": "^0.23.0",
     "rxjs": "^5.3.0"
   },
