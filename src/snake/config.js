@@ -16,3 +16,5 @@ export const move_speed = 100
 export const init_length = 5
 export const init_direction = key_right
 
+// game
+export const score_value = 5
