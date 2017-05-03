@@ -37,8 +37,8 @@ const renderText = (font, color, text, offsetY) => {
 
 export const renderScene = type => {
   const sceneText = {
-    opening: ["Let's play some Snake", '🐍 Press any key to start 🐍'],
-    ending: ['GAME OVER', '👉 Press any key to restart 👈']
+    opening: ["Let's play some Snake", '🐍 Press W/A/S/D to start 🐍'],
+    ending: ['GAME OVER', '👉 Press W/A/S/D to restart 👈']
   }
   renderText('40px Arial', '#FF6946', sceneText[type][0], -40)
   renderText('25px fantasy', '#61ADF8', sceneText[type][1], 40)
