@@ -1,6 +1,7 @@
 import * as c from './config'
 
 const canvas = document.querySelector('#game-canvas')
+const scoreboard = document.querySelector('#scoreboard')
 const ctx = canvas.getContext('2d')
 const dot_r = c.dot_size / 2
 
@@ -22,10 +23,15 @@ const renderSnake = snake => {
 
 const renderFood = renderDot('#A0C800', dot_r + 2)
 
+const renderScoreboard = score => {
+  scoreboard.innerText = score
+}
+
 export const renderGame = actors => {
   ctx.clearRect(0, 0, c.w, c.h) // clear the canvas first
   renderSnake(actors.snake)
   renderFood(actors.food)
+  renderScoreboard(actors.scoreboard)
 }
 
 const renderText = (font, color, text, offsetY) => {
