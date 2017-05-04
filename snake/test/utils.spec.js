@@ -1,5 +1,5 @@
 import {expect} from 'chai'
-import {circulateMove, randomBetween, collide} from '../../src/snake/utils.js'
+import {circulateMove, randomBetween, collide} from '../src/utils.js'
 
 describe('Utils', () => {
   const min = 0
