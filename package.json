@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "mocha ./test/**/*.spec.js --reporter landing --watch --require babel-register",
-    "snake": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/snake/main.js -t babelify --debug -o dist/snake.js -v",
-    "spaceship": "echo 'OPEN index.html IN YOUR BROWSER' && watchify src/spaceship/main.js -t babelify --debug -o dist/spaceship.js -v"
+    "clean": "rm -r dist/*",
+    "test": "mocha test/**/*.spec.js --reporter landing --watch --require babel-register",
+    "build:css": "stylus -w src/snake/style.styl -o dist/snake.css",
+    "build:js": "watchify src/snake/main.js --debug -t babelify -o dist/snake.js -v",
+    "dev": "concurrently 'npm run build:css' 'npm run build:js'"
   },
-  "author": "",
+  "author": "Poplar_hills",
   "license": "ISC",
-  "dependencies": { 
+  "dependencies": {
     "ramda": "^0.23.0",
     "rxjs": "^5.3.0"
   },
@@ -20,7 +22,9 @@
     "babelify": "^7.3.0",
     "browserify": "^14.1.0",
     "chai": "^3.5.0",
+    "concurrently": "^3.4.0",
     "mocha": "^3.3.0",
+    "stylus": "^0.54.5",
     "watchify": "^3.9.0"
   },
   "babel": {
