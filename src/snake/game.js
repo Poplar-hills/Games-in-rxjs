@@ -1,7 +1,7 @@
 import {Observable, Subject} from 'rxjs'
 import {prop, last, equals, flip, contains, compose, multiply, length} from 'ramda'
 import {circulateMove, randomBetween, collide} from './utils'
-import {renderGame} from './renderer'
+import {renderGame, renderScene} from './renderer'
 import * as c from './config'
 
 const dot_r = c.dot_size / 2
