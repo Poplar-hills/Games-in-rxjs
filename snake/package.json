@@ -8,6 +8,7 @@
     "test": "mocha test/*.spec.js --reporter landing --watch --require babel-register",
     "build:css": "stylus -w src/style.styl -o dist/style.css",
     "build:js": "watchify src/main.js --debug -t babelify -o dist/bundle.js -v",
+    "predev": "echo 'OPEN index.html IN YOUR BROWSER 👈 👈'",
     "dev": "concurrently 'npm run build:css' 'npm run build:js'"
   },
   "author": "Poplar_hills",
