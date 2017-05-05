@@ -1,28 +1,43 @@
+$s = {
+  scoreboard_d: 60px
+}
+
+$c = {
+  bg: black,
+  canvas: rgba(0, 0, 100, .5),
+  border: rgba(white, .5),
+  scoreboard: rgba(white, .3),
+  text: white
+}
+
 html, body
   height: 100%
   font-family: 'Arial'
-  background-color: black
+  background-color: $c.bg
+  padding: 15px
   margin: 0
 
 #app
   position: relative
 
-#scoreboard
-  position: absolute
-  top: 15px
-  left: 600px    /* the width of the canvas is 615px */
-  width: 55px
-  height: 55px
-  line-height: 55px
-  text-align: center
-  color: white
-  font-size: 25px
-  background: rgba(255, 255, 255, .3)
-  border: solid 1px white
-  border-radius: 100%
- 
 #game-canvas
   position: absolute
-  top: 55px
-  background-color: rgba(0, 0, 100, .5)
-  border: solid 1px white
+  top: "calc(%s / 1.3)" % $s.scoreboard_d
+  right: @top
+  background-color: $c.canvas
+  border: solid 1px $c.border
+
+#scoreboard
+  position: absolute
+  top: 0
+  right: @top
+  width: $s.scoreboard_d
+  height: @width
+  line-height: @width
+  text-align: center
+  font-size: "calc(%s / 2.5)" % @height
+  color: $c.text
+  background: $c.scoreboard
+  border: solid 1px $c.border
+  border-radius: 100%
+ 
