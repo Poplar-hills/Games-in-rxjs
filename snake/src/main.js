@@ -1,4 +1,4 @@
-import run from './game'
+import run from './run'
 import {renderScene} from './renderer'
 
 renderScene('opening')
