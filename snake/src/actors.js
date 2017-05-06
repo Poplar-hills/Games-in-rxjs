@@ -8,33 +8,8 @@ const containedBy = flip(contains)
 const circulateX = circulateMove(dot_r, 0, c.w)
 const circulateY = circulateMove(dot_r, 0, c.h)
 
-function moveDot ({x, y}, direction) {
-  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
-  const moveMap = {
-    [c.key_up]:    {x, y: y - c.dot_size},
-    [c.key_left]:  {x: x - c.dot_size, y},
-    [c.key_down]:  {x, y: y + c.dot_size},
-    [c.key_right]: {x: x + c.dot_size, y}
-  }
-  return validateMove(moveMap[direction])
-}
-
-function crawl (prev, curr) {
-  const oldSnakeHead = last(prev.snake)
-  const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
-  const hasCaughtFood = !equals(prev.food, curr.food)
-  const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-
-  return {
-    snake: newSnakeBody.concat(newSnakeHead),
-    direction: curr.direction,
-    food: curr.food
-  }
-}
-
 export function genDirection$ (keypress$) {
   return keypress$
-    .sampleTime(c.move_speed) // prevent the sanke from reversing its direction caused by pressing R->T->L very fast (faster than the move_speed)
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
@@ -100,4 +75,28 @@ export function genFood$ (snake$, firstFoodPosition, randomPosition) {
 
 export function genScoreboard$ (snake$) {
   return snake$.map(compose(multiply(c.score_value), length))
+}
+
+function moveDot ({x, y}, direction) {
+  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
+  const moveMap = {
+    [c.key_up]:    {x, y: y - c.dot_size},
+    [c.key_left]:  {x: x - c.dot_size, y},
+    [c.key_down]:  {x, y: y + c.dot_size},
+    [c.key_right]: {x: x + c.dot_size, y}
+  }
+  return validateMove(moveMap[direction])
+}
+
+function crawl (prev, curr) {
+  const oldSnakeHead = last(prev.snake)
+  const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
+  const hasCaughtFood = !equals(prev.food, curr.food)
+  const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+
+  return {
+    snake: newSnakeBody.concat(newSnakeHead),
+    direction: curr.direction,
+    food: curr.food
+  }
 }

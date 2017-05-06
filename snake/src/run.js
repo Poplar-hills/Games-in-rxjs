@@ -5,12 +5,10 @@ import {renderGame, renderScene} from './renderer'
 import {genDirection$, genSnake$, genFood$, genScoreboard$} from './actors'
 import * as c from './config'
 
-const dot_r = c.dot_size / 2
-
 export default function run () {
   const firstFoodPosition = randomPosition()
   const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
-  const keypress$ = Observable.fromEvent(document, 'keypress')
+  const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.move_speed)
   const direction$ = genDirection$(keypress$)
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
   const food$ = genFood$(snake$, firstFoodPosition, randomPosition)
@@ -30,7 +28,7 @@ export default function run () {
 }
 
 function randomPosition () {
-  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - dot_r
+  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - c.dot_size / 2
   return {
     x: randomCoordinate(c.w / c.dot_size - 1),
     y: randomCoordinate(c.h / c.dot_size - 1)
