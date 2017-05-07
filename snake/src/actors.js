@@ -8,23 +8,15 @@ const containedBy = flip(contains)
 const circulateX = circulateMove(dot_r, 0, c.w)
 const circulateY = circulateMove(dot_r, 0, c.h)
 
-export function genDirection$ (keypress$) {
+export function genDirection$ (keypress$, initDirection) {
   return keypress$
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
       const inSuccession = (...arr) => [prev, curr].every(containedBy(arr))
       return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
-    }, c.init_direction)
+    }, initDirection)
     .distinctUntilChanged()
-
-  /*
-  ----U----L----L----R----D----U----R----  keypress$
-                   scan                    snake cannot reverse its direction (L->R, R->L, U->D or D->U)
-  ----U----L----L----L----D----D----R----
-           distinctUntilChanged
-  ----U----L--------------D---------R----
-  */
 }
 
 export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {

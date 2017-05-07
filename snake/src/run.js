@@ -9,7 +9,7 @@ export default function run () {
   const firstFoodPosition = randomPosition()
   const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
   const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.move_speed)
-  const direction$ = genDirection$(keypress$)
+  const direction$ = genDirection$(keypress$, c.init_direction)
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
   const food$ = genFood$(snake$, firstFoodPosition, randomPosition)
   const scoreboard$ = genScoreboard$(snake$)
