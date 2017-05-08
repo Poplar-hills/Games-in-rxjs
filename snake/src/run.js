@@ -12,7 +12,7 @@ export default function run () {
   const direction$ = genDirection$(keypress$, c.init_direction)
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
   const food$ = genFood$(snake$, firstFoodPosition, randomPosition)
-  const scoreboard$ = genScoreboard$(snake$)
+  const scoreboard$ = genScoreboard$(snake$, c.score_value)
   
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
   const gameSub = Observable.combineLatest(

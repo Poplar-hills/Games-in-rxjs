@@ -65,8 +65,10 @@ export function genFood$ (snake$, firstFoodPosition, randomPosition) {
   */
 }
 
-export function genScoreboard$ (snake$) {
-  return snake$.map(compose(multiply(c.score_value), length))
+export function genScoreboard$ (snake$, scoreValue) {
+  return snake$
+    .map(compose(multiply(scoreValue), length))
+    .distinctUntilChanged()
 }
 
 function moveDot ({x, y}, direction) {
@@ -85,7 +87,6 @@ function crawl (prev, curr) {
   const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
   const hasCaughtFood = !equals(prev.food, curr.food)
   const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-
   return {
     snake: newSnakeBody.concat(newSnakeHead),
     direction: curr.direction,
