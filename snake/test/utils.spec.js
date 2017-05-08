@@ -5,32 +5,32 @@ const min = 0
 const max = 100
 const offset = 5
 
-test('should be moved to the left side of the map', t => {
-  const initPos = 105
-  const resultPos = circulateMove(offset, min, max)(initPos)
-  t.is(resultPos, 5)
+test('circulateMove should return min + offset when the input < the max', t => {
+  const input = 105
+  const resultPos = circulateMove(offset, min, max)(input)
+  t.is(resultPos, min + offset)
 })
 
-test('should be moved to the right side of the map', t => {
-  const initPos = -5
-  const resultPos = circulateMove(offset, min, max)(initPos)
-  t.is(resultPos, 95)
+test('circulateMove should return max - offset when the min < the input', t => {
+  const input = -5
+  const resultPos = circulateMove(offset, min, max)(input)
+  t.is(resultPos, max - offset)
 })
 
-test('should stay where it is', t => {
-  const initPos = 40
-  const resultPos = circulateMove(offset, min, max)(initPos)
-  t.is(resultPos, 40)
+test('circulateMove should return the same value as the input when the min < the input < the max', t => {
+  const input = 40
+  const resultPos = circulateMove(offset, min, max)(input)
+  t.is(resultPos, input)
 })
 
-test('should determine if two objects collide', t => {
+test('collide should return true if the two sets of coordinates are the same', t => {
   const c1 = {x: 4, y: 10}
   const c2 = {x: 4, y: 10}
   const result = collide(c1, c2)
   t.true(result)
 })
 
-test('should determine if two objects collide', t => {
+test('collide should return false if the two sets of coordinates are not the same', t => {
   const c1 = {x: 4, y: 10}
   const c2 = {x: 4, y: 20}
   const result = collide(c1, c2)
