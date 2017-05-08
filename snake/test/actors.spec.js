@@ -3,51 +3,47 @@ import {Observable} from 'rxjs'
 import {TestScheduler} from 'rxjs/testing/TestScheduler'
 import {genDirection$} from '../src/actors'
 
-const keypressValues = {
-  W: {keyCode: 119},
-  A: {keyCode: 97},
-  S: {keyCode: 115},
-  D: {keyCode: 100},
-  T: {keyCode: 84},
-  B: {keyCode: 66},
-}
-const directionValues = {W: 119, A: 97, S: 115, D: 100, T: 84, B: 66}
+const testData = [
+  {
+    desc: 'direction$ should only emit the keycode values of W, A, S and D',
+    upStream:   '--S--T--D--B--T--W--',
+    downStream: '--S-----D--------W--'
+  },
+  {
+    desc: 'direction$ should emit the first if two same directions occur in a row',
+    upStream:   '--W--A--A--S--D--D--',
+    downStream: '--W--A-----S--D-----'
+  },
+  {
+    desc: 'direction$ should omit the second dircetion if it is opposite to the initial direction',
+    upStream:   '--A--S--',
+    downStream: '--D--S--'
+  },
+  {
+    desc: 'direction$ should emit the first if two opposite directions occur in a row',
+    upStream:   '--W--A--D--A--W--S--S--',
+    downStream: '--W--A--------W--------'
+  }
+]
 
-const runTest = (scheduler, upStream, downStream, initDirection) => {
-  const keypress$ = scheduler.createHotObservable(upStream, keypressValues)
-  const direction$ = genDirection$(keypress$, initDirection)
-  scheduler.expectObservable(direction$).toBe(downStream, directionValues)
-  scheduler.flush()
-}
+testData.forEach(_ => {
+  const keypressValues = {
+    W: {keyCode: 119},
+    A: {keyCode: 97},
+    S: {keyCode: 115},
+    D: {keyCode: 100},
+    T: {keyCode: 84},
+    B: {keyCode: 66},
+  }
+  const directionValues = {W: 119, A: 97, S: 115, D: 100, T: 84, B: 66}
 
-test('direction$ should only emit the keycode values of W, A, S and D', t => {
-  const scheduler = new TestScheduler(t.deepEqual.bind(t))
-  const upStream =   '--S--T--D--B--T--W--'
-  const downStream = '--S-----D--------W--'
-  const initDirection = directionValues.D
-  runTest(scheduler, upStream, downStream, initDirection)
-})
+  test(_.desc, t => {
+    const scheduler = new TestScheduler(t.deepEqual.bind(t))
+    const initDirection = directionValues.D
+    const keypress$ = scheduler.createHotObservable(_.upStream, keypressValues)
+    const direction$ = genDirection$(keypress$, initDirection)
 
-test('direction$ should emit the first if two same directions occur in a row', t => {
-  const scheduler = new TestScheduler(t.deepEqual.bind(t))
-  const upStream =   '--W--A--A--S--D--D--'
-  const downStream = '--W--A-----S--D-----'
-  const initDirection = directionValues.D
-  runTest(scheduler, upStream, downStream, initDirection)
-})
-
-test('direction$ should omit the second dircetion if it is opposite to the initial direction', t => {
-  const scheduler = new TestScheduler(t.deepEqual.bind(t))
-  const upStream =   '--A--S--'
-  const downStream = '--D--S--'
-  const initDirection = directionValues.D
-  runTest(scheduler, upStream, downStream, initDirection)
-})
-
-test('direction$ should emit the first if two opposite directions occur in a row', t => {
-  const scheduler = new TestScheduler(t.deepEqual.bind(t))
-  const upStream =   '--W--A--D--A--W--S--S--'
-  const downStream = '--W--A--------W--------'
-  const initDirection = directionValues.D
-  runTest(scheduler, upStream, downStream, initDirection)
+    scheduler.expectObservable(direction$).toBe(_.downStream, directionValues)
+    scheduler.flush()
+  })  
 })
