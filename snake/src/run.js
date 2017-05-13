@@ -28,10 +28,11 @@ export default function run () {
 }
 
 function randomPosition () {
-  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - c.dot_size / 2
+  const dot_r = c.dot_size / 2
+  const genCoordinate = max => randomBetween(dot_r, max - dot_r, c.dot_size)
   return {
-    x: randomCoordinate(c.w / c.dot_size - 1),
-    y: randomCoordinate(c.h / c.dot_size - 1)
+    x: genCoordinate(c.w),
+    y: genCoordinate(c.h),
   }
 }
 

@@ -6,8 +6,8 @@ const circulateMove = (offset, min, max) => cond([
   [T, identity]
 ])
 
-const randomBetween = (min, max) => {
-  return ~~(Math.random() * (max - min + 1)) + min
+const randomBetween = (min, max, step = 1) => {
+  return ~~(Math.random() * ((max - min) / step + 1)) * step + min
 }
 
 const collide = (dotA, dotB) => {
