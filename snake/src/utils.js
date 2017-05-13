@@ -1,22 +1,20 @@
 import {cond, gt, lt, always, T, identity} from 'ramda'
 
-const circulateMove = (offset, min, max) => cond([
+export const circulateMove = (offset, min, max) => cond([
   [lt(max), always(offset)],
   [gt(0), always(max - offset)],
   [T, identity]
 ])
 
-const randomBetween = (min, max, step = 1) => {
+export const randomBetween = (min, max, step = 1) => {
   return ~~(Math.random() * ((max - min) / step + 1)) * step + min
 }
 
-const randomFrom = candidates => {
+export const randomFrom = candidates => {
   const randomIndex = randomBetween(0, candidates.length - 1)
   return candidates[randomIndex]
 }
 
-const collide = (dotA, dotB) => {
+export const collide = (dotA, dotB) => {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
-
-export {circulateMove, randomBetween, collide}
