@@ -10,6 +10,11 @@ const randomBetween = (min, max, step = 1) => {
   return ~~(Math.random() * ((max - min) / step + 1)) * step + min
 }
 
+const randomFrom = candidates => {
+  const randomIndex = randomBetween(0, candidates.length - 1)
+  return candidates[randomIndex]
+}
+
 const collide = (dotA, dotB) => {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
