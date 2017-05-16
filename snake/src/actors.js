@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs'
-import {prop, last, equals, flip, contains, compose, multiply, length} from 'ramda'
-import {collide, circulateMove} from './utils'
+import {prop, last, equals, flip, contains, compose, multiply, length, without} from 'ramda'
+import {getCanvasCoordinates} from './init'
+import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as c from './config'
 
 const dot_r = c.dot_size / 2
@@ -8,23 +9,15 @@ const containedBy = flip(contains)
 const circulateX = circulateMove(dot_r, 0, c.w)
 const circulateY = circulateMove(dot_r, 0, c.h)
 
-export function genDirection$ (keypress$) {
+export function genDirection$ (keypress$, initDirection) {
   return keypress$
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
       const inSuccession = (...arr) => [prev, curr].every(containedBy(arr))
       return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
-    }, c.init_direction)
+    }, initDirection)
     .distinctUntilChanged()
-
-  /*
-  ----U----L----L----R----D----U----R----  keypress$
-                   scan                    snake cannot reverse its direction (L->R, R->L, U->D or D->U)
-  ----U----L----L----L----D----D----R----
-           distinctUntilChanged
-  ----U----L--------------D---------R----
-  */
 }
 
 export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
@@ -53,28 +46,26 @@ export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
   */
 }
 
-export function genFood$ (snake$, firstFoodPosition, randomPosition) {
+export function genFood$ (snake$, firstFoodPosition) {
   return snake$
-    .map(last)
-    .scan((prevFood, snakeHead) => {
-      return collide(prevFood, snakeHead) ? randomPosition() : prevFood
+    .scan((prevFood, snake) => {
+      return collide(prevFood, last(snake)) ? nextPosition(snake) : prevFood
     }, firstFoodPosition)
     .distinctUntilChanged()
-    .share()    // food$ is also subscribed twice
-
-  /*
-  -----snake0[]--snake1[]--snake2[]--snake3[]----  snake$
-                        map
-  -----{x0,y0}---{x0,y1}---{x0,y2}---{x0,y3}-----  snakeHead$
-                        scan
-  -----{x0,y2}---{x0,y2}---{x4,y6}---{x4,y6}-----  food$
-                 distinctUntilChanged       
-  -----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
-  */
+    .share()
 }
 
-export function genScoreboard$ (snake$) {
-  return snake$.map(compose(multiply(c.score_value), length))
+export function genScoreboard$ (snake$, scoreValue) {
+  return snake$
+    .map(compose(multiply(scoreValue), length))
+    .distinctUntilChanged()
+}
+
+function nextPosition (snake) {
+  const canvasCoordinates = getCanvasCoordinates(c.w, c.h, c.dot_size)
+  const snakeCoordinates = snake.map(dot => `${dot.x},${dot.y}`)
+  const validCoordinates = without(snakeCoordinates, canvasCoordinates)
+  return toCoordObj(randomFrom(validCoordinates))
 }
 
 function moveDot ({x, y}, direction) {
@@ -93,7 +84,6 @@ function crawl (prev, curr) {
   const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
   const hasCaughtFood = !equals(prev.food, curr.food)
   const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-
   return {
     snake: newSnakeBody.concat(newSnakeHead),
     direction: curr.direction,

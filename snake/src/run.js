@@ -9,10 +9,10 @@ export default function run () {
   const firstFoodPosition = randomPosition()
   const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
   const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.move_speed)
-  const direction$ = genDirection$(keypress$)
+  const direction$ = genDirection$(keypress$, c.init_direction)
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
-  const food$ = genFood$(snake$, firstFoodPosition, randomPosition)
-  const scoreboard$ = genScoreboard$(snake$)
+  const food$ = genFood$(snake$, firstFoodPosition)
+  const scoreboard$ = genScoreboard$(snake$, c.score_value)
   
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
   const gameSub = Observable.combineLatest(
@@ -28,10 +28,11 @@ export default function run () {
 }
 
 function randomPosition () {
-  const randomCoordinate = max => randomBetween(1, max) * c.dot_size - c.dot_size / 2
+  const dot_r = c.dot_size / 2
+  const genCoordinate = max => randomBetween(dot_r, max - dot_r, c.dot_size)
   return {
-    x: randomCoordinate(c.w / c.dot_size - 1),
-    y: randomCoordinate(c.h / c.dot_size - 1)
+    x: genCoordinate(c.w),
+    y: genCoordinate(c.h),
   }
 }
 

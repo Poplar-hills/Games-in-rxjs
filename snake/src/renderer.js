@@ -8,13 +8,11 @@ const dot_r = c.dot_size / 2
 canvas.width = c.w
 canvas.height = c.h
 
-const renderDot = (color, radius = dot_r) => {
-  return ({x, y}) => {
-    ctx.beginPath()
-    ctx.arc(x, y, radius, 0, Math.PI * 2)
-    ctx.fillStyle = color
-    ctx.fill()
-  }
+const renderDot = (color, radius = dot_r) => ({x, y}) => {
+  ctx.beginPath()
+  ctx.arc(x, y, radius, 0, Math.PI * 2)
+  ctx.fillStyle = color
+  ctx.fill()
 }
 
 const renderSnake = snake => {
