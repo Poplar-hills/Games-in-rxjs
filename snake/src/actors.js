@@ -1,6 +1,7 @@
 import {Observable} from 'rxjs'
-import {prop, last, equals, flip, contains, compose, multiply, length} from 'ramda'
-import {collide, circulateMove} from './utils'
+import {prop, last, equals, flip, contains, compose, multiply, length, without} from 'ramda'
+import {getCanvasCoordinates} from './init'
+import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as c from './config'
 
 const dot_r = c.dot_size / 2
@@ -45,30 +46,26 @@ export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
   */
 }
 
-export function genFood$ (snake$, firstFoodPosition, randomPosition) {
+export function genFood$ (snake$, firstFoodPosition) {
   return snake$
-    .map(last)
-    .scan((prevFood, snakeHead) => {
-      return collide(prevFood, snakeHead) ? randomPosition() : prevFood
+    .scan((prevFood, snake) => {
+      return collide(prevFood, last(snake)) ? nextPosition(snake) : prevFood
     }, firstFoodPosition)
     .distinctUntilChanged()
-    .share()    // food$ is also subscribed twice
-
-  /*
-  -----snake0[]--snake1[]--snake2[]--snake3[]----  snake$
-                        map
-  -----{x0,y0}---{x0,y1}---{x0,y2}---{x0,y3}-----  snakeHead$
-                        scan
-  -----{x0,y2}---{x0,y2}---{x4,y6}---{x4,y6}-----  food$
-                 distinctUntilChanged       
-  -----{x0,y2}-------------{x4,y6}---------------  food$ with unique elements
-  */
+    .share()
 }
 
 export function genScoreboard$ (snake$, scoreValue) {
   return snake$
     .map(compose(multiply(scoreValue), length))
     .distinctUntilChanged()
+}
+
+function nextPosition (snake) {
+  const canvasCoordinates = getCanvasCoordinates(c.w, c.h, c.dot_size)
+  const snakeCoordinates = snake.map(dot => `${dot.x},${dot.y}`)
+  const validCoordinates = without(snakeCoordinates, canvasCoordinates)
+  return toCoordObj(randomFrom(validCoordinates))
 }
 
 function moveDot ({x, y}, direction) {

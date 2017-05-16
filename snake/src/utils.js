@@ -18,3 +18,8 @@ export const randomFrom = candidates => {
 export const collide = (dotA, dotB) => {
   return dotA.x === dotB.x && dotA.y === dotB.y
 }
+
+export const toCoordObj = str => {
+  const coords = str.split(',')
+  return {x: +coords[0], y: +coords[1]}
+}

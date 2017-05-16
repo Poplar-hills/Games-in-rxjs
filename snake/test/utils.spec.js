@@ -1,5 +1,5 @@
 import test from 'ava'
-import {circulateMove, randomBetween, collide} from '../src/utils.js'
+import {circulateMove, randomBetween, collide, toCoordObj} from '../src/utils.js'
 
 const min = 0
 const max = 100
@@ -35,4 +35,11 @@ test('collide should return false if the two sets of coordinates are not the sam
   const c2 = {x: 4, y: 20}
   const result = collide(c1, c2)
   t.false(result)
+})
+
+test('toCoordObj should convert a comma-separated string to an object with keys of "x" and "y" ', t => {
+  const str = '40,20'
+  const result = toCoordObj(str)
+  const expected = {x: 40, y: 20}
+  t.deepEqual(result, expected)
 })
