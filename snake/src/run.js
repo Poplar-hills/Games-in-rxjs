@@ -1,5 +1,5 @@
 import {Observable, Subject} from 'rxjs'
-import {last} from 'ramda'
+import {compose, prop, not, last} from 'ramda'
 import {randomBetween, collide} from './utils'
 import {renderGame, renderScene} from './renderer'
 import {genDirection$, genSnake$, genFood$, genScoreboard$} from './actors'
@@ -17,11 +17,16 @@ export default function run () {
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
   const gameSub = Observable.combineLatest(
       snake$, food$, scoreboard$,
-      (snake, food, scoreboard) => ({snake, food, scoreboard})
+      (snake, food, scoreboard) => {
+        let status = ''
+        if (isDead(snake)) status = 'defeated'
+        if (!food) status = 'victorious'
+        return {snake, food, scoreboard, status}
+      }
     )
-    .takeWhile(({snake}) => !isGameOver(snake))
+    .do(compose(renderScene, prop('status')))
+    .takeWhile(compose(not, prop('status')))
     .subscribe(renderGame, null, () => {
-      renderScene('ending')
       cleanUp(foodSub, gameSub)
       run()
     })
