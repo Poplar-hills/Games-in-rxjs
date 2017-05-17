@@ -29,14 +29,14 @@ export default function run () {
 
 function randomPosition () {
   const dot_r = c.dot_size / 2
-  const genCoordinate = max => randomBetween(dot_r, max - dot_r, c.dot_size)
+  const genCoord = max => randomBetween(dot_r, max - dot_r, c.dot_size)
   return {
-    x: genCoordinate(c.w),
-    y: genCoordinate(c.h),
+    x: genCoord(c.w),
+    y: genCoord(c.h),
   }
 }
 
-function isGameOver (snake) {
+function isDead (snake) {
   const snakeHead = last(snake)
   const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))

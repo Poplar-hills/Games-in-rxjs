@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs'
 import {prop, last, equals, flip, contains, compose, multiply, length, without} from 'ramda'
-import {getCanvasCoordinates} from './init'
+import {getCanvasCoords} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as c from './config'
 
