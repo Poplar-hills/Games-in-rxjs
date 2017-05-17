@@ -5,17 +5,17 @@ export const getCanvasCoords = memoize((w, h, dot_size) => {
   const calcPoint = _ => _ * dot_size + dot_size / 2
   const xCount = w / dot_size
   const yCount = h / dot_size
-  const arr = []
+  const result = []
 
   for (let i = 0; i < xCount; i++) {
     for (let j = 0; j < yCount; j++) {
       const x = calcPoint(i)
       const y = calcPoint(j)
-      arr.push(`${x},${y}`)
+      result.push(`${x},${y}`)
     }
   }
 
-  return arr
+  return result
 })
 
 export default function init () {
