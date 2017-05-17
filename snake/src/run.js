@@ -20,11 +20,11 @@ export default function run () {
       (snake, food, scoreboard) => {
         let status = ''
         if (isDead(snake)) status = 'defeated'
-        if (!food) status = 'victorious'
+        if (!food) status = 'victorious'        // when there's no space for the next food
         return {snake, food, scoreboard, status}
       }
     )
-    .do(compose(renderScene, prop('status')))
+    .do(compose(renderScene, prop('status')))   // render victorious / defeated scene
     .takeWhile(compose(not, prop('status')))
     .subscribe(renderGame, null, () => {
       cleanUp(foodSub, gameSub)
