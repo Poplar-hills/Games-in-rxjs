@@ -19,7 +19,7 @@ const renderSnake = snake => {
   snake.forEach(renderDot('orange'))
 }
 
-const renderFood = renderDot('#A0C800', dot_r + 2)
+const renderFood = renderDot('#A0C800', dot_r)
 
 const renderScoreboard = score => {
   scoreboard.innerText = score
