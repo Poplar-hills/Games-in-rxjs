@@ -15,15 +15,7 @@ export default function run () {
   const scoreboard$ = genScoreboard$(snake$, c.score_value)
   
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
-  const gameSub = Observable.combineLatest(
-      snake$, food$, scoreboard$,
-      (snake, food, scoreboard) => {
-        let status = ''
-        if (isDead(snake)) status = 'defeated'
-        if (!food) status = 'victorious'        // when there's no space for the next food
-        return {snake, food, scoreboard, status}
-      }
-    )
+  const gameSub = Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
     .do(compose(renderScene, prop('status')))   // render victorious / defeated scene
     .takeWhile(compose(not, prop('status')))
     .subscribe(renderGame, null, () => {
@@ -39,6 +31,13 @@ function randomPosition () {
     x: genCoord(c.w),
     y: genCoord(c.h),
   }
+}
+
+function addGameStatus (snake, food, scoreboard) {
+  let status = ''
+  if (isDead(snake)) status = 'defeated'
+  if (!food) status = 'victorious'        // when there's no space for the next food
+  return {snake, food, scoreboard, status}
 }
 
 function isDead (snake) {
