@@ -13,15 +13,15 @@ export default function run () {
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
   const food$ = genFood$(snake$, firstFoodPosition)
   const scoreboard$ = genScoreboard$(snake$, c.score_value)
-  
-  const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
-  const gameSub = Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
+  const game$ = Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
     .do(compose(renderScene, prop('status')))   // render victorious / defeated scene
     .takeWhile(compose(not, prop('status')))
-    .subscribe(renderGame, null, () => {
-      cleanUp(foodSub, gameSub)
-      run()
-    })
+  
+  const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
+  const gameSub = game$.subscribe(renderGame, null, () => {
+    cleanUp(foodSub, gameSub)
+    run()
+  })
 }
 
 function randomPosition () {
