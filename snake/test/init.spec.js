@@ -10,7 +10,7 @@ test('getCanvasCoords should return a map of coordinates for given canvas dimens
   t.deepEqual(result, expected)
 })
 
-test('getCanvasCoords should always memorize the result after the first call', t => {
+test('getCanvasCoords should always memorize the result after the first invocation', t => {
   const canvasWidth = 30
   const canvasHeight = 20
   const dot_size = 10
