@@ -1,5 +1,5 @@
 import {Observable, Subject} from 'rxjs'
-import {last} from 'ramda'
+import {compose, prop, not, last} from 'ramda'
 import {randomBetween, collide} from './utils'
 import {renderGame, renderScene} from './renderer'
 import {genDirection$, genSnake$, genFood$, genScoreboard$} from './actors'
@@ -17,11 +17,16 @@ export default function run () {
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
   const gameSub = Observable.combineLatest(
       snake$, food$, scoreboard$,
-      (snake, food, scoreboard) => ({snake, food, scoreboard})
+      (snake, food, scoreboard) => {
+        let status = ''
+        if (isDead(snake)) status = 'defeated'
+        if (!food) status = 'victorious'
+        return {snake, food, scoreboard, status}
+      }
     )
-    .takeWhile(({snake}) => !isGameOver(snake))
+    .do(compose(renderScene, prop('status')))
+    .takeWhile(compose(not, prop('status')))
     .subscribe(renderGame, null, () => {
-      renderScene('ending')
       cleanUp(foodSub, gameSub)
       run()
     })
@@ -29,14 +34,14 @@ export default function run () {
 
 function randomPosition () {
   const dot_r = c.dot_size / 2
-  const genCoordinate = max => randomBetween(dot_r, max - dot_r, c.dot_size)
+  const genCoord = max => randomBetween(dot_r, max - dot_r, c.dot_size)
   return {
-    x: genCoordinate(c.w),
-    y: genCoordinate(c.h),
+    x: genCoord(c.w),
+    y: genCoord(c.h),
   }
 }
 
-function isGameOver (snake) {
+function isDead (snake) {
   const snakeHead = last(snake)
   const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
   return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))

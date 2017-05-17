@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs'
 import {prop, last, equals, flip, contains, compose, multiply, length, without} from 'ramda'
-import {getCanvasCoordinates} from './init'
+import {getCanvasCoords} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as c from './config'
 
@@ -62,10 +62,12 @@ export function genScoreboard$ (snake$, scoreValue) {
 }
 
 function nextPosition (snake) {
-  const canvasCoordinates = getCanvasCoordinates(c.w, c.h, c.dot_size)
-  const snakeCoordinates = snake.map(dot => `${dot.x},${dot.y}`)
-  const validCoordinates = without(snakeCoordinates, canvasCoordinates)
-  return toCoordObj(randomFrom(validCoordinates))
+  const canvasCoords = getCanvasCoords(c.w, c.h, c.dot_size)
+  const snakeCoords = snake.map(dot => `${dot.x},${dot.y}`)
+  const validCoords = without(snakeCoords, canvasCoords)
+  return validCoords.length !== 0
+    ? toCoordObj(randomFrom(validCoords))
+    : null  // only occurs when there is no space for the next food, namely the player has won
 }
 
 function moveDot ({x, y}, direction) {

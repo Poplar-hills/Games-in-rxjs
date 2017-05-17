@@ -19,14 +19,18 @@ const renderSnake = snake => {
   snake.forEach(renderDot('orange'))
 }
 
-const renderFood = renderDot('#A0C800', dot_r + 2)
+const renderFood = renderDot('#A0C800', dot_r)
 
 const renderScoreboard = score => {
   scoreboard.innerText = score
 }
 
+const clearCanvas = () => {
+  ctx.clearRect(0, 0, c.w, c.h)
+}
+
 export const renderGame = actors => {
-  ctx.clearRect(0, 0, c.w, c.h) // clear the canvas first
+  clearCanvas()
   renderSnake(actors.snake)
   renderFood(actors.food)
   renderScoreboard(actors.scoreboard)
@@ -40,9 +44,11 @@ const renderText = (font, color, text, offsetY) => {
 }
 
 export const renderScene = type => {
+  if (!type) return
   const sceneText = {
     opening: ["Let's play some Snake", '🐍 Press W/A/S/D to start 🐍'],
-    ending: ['GAME OVER', '👉 Press W/A/S/D to restart 👈']
+    victorious: ['Just Amazing!', '👉 Press W/A/S/D to restart 👈'],
+    defeated: ['Woops...', '👉 Press W/A/S/D to restart 👈']
   }
   renderText('40px Arial', '#FF6946', sceneText[type][0], -40)
   renderText('25px fantasy', '#61ADF8', sceneText[type][1], 40)
