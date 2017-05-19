@@ -1,5 +1,4 @@
 import test from 'ava'
-import {Observable} from 'rxjs'
 import {TestScheduler} from 'rxjs/testing/TestScheduler'
 import {genScoreboard$} from '../src/actors'
 
