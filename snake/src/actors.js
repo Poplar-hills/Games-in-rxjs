@@ -2,14 +2,14 @@ import {Observable} from 'rxjs'
 import {prop, last, equals, flip, contains, compose, multiply, length, without, not} from 'ramda'
 import {getCanvasCoords} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
-import * as c from './config'
+import * as config from './config'
 
-const dot_r = c.dot_size / 2
+const dot_r = config.dot_size / 2
 const containedBy = flip(contains)
-const circulateX = circulateMove(dot_r, 0, c.w)
-const circulateY = circulateMove(dot_r, 0, c.h)
+const circulateX = circulateMove(dot_r, 0, config.w)
+const circulateY = circulateMove(dot_r, 0, config.h)
 
-export function genDirection$ (keypress$, initDirection) {
+export function genDirection$ (keypress$, initDirection, c = config) {
   return keypress$
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
@@ -20,13 +20,13 @@ export function genDirection$ (keypress$, initDirection) {
     .distinctUntilChanged()
 }
 
-export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
+export function genSnake$ (direction$, foodProxy$, firstFood, c = config) {
   return Observable.range(1, c.init_length)
     .map(i => ({x: c.w / 2 + i * c.dot_size, y: c.h / 2}))
     .toArray()
     .mergeMap(snake => Observable.interval(c.move_speed)
       .withLatestFrom(
-        direction$, foodProxy$.startWith(firstFoodPosition),
+        direction$, foodProxy$.startWith(firstFood),
         (i, direction, food) => ({direction, snake, food}))
       .scan(crawl)
     )
@@ -34,11 +34,11 @@ export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
     .share()
 }
 
-export function genFood$ (snake$, firstFoodPosition) {
+export function genFood$ (snake$, firstFood) {
   return snake$
     .scan((prevFood, snake) => {
       return collide(prevFood, last(snake)) ? nextPosition(snake) : prevFood
-    }, firstFoodPosition)
+    }, firstFood)
     .distinctUntilChanged()
     .share()
 }
@@ -67,7 +67,7 @@ function isDead (snake) {
   return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
-function nextPosition (snake) {
+function nextPosition (snake, c = config) {
   const canvasCoords = getCanvasCoords(c.w, c.h, c.dot_size)
   const snakeCoords = snake.map(dot => `${dot.x},${dot.y}`)
   const validCoords = without(snakeCoords, canvasCoords)
@@ -76,7 +76,7 @@ function nextPosition (snake) {
     : null  // when there's no space for the next food -> the player has won
 }
 
-function moveDot ({x, y}, direction) {
+function moveDot ({x, y}, direction, c = config) {
   const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
   const moveMap = {
     [c.key_up]:    {x, y: y - c.dot_size},
