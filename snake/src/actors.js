@@ -28,7 +28,7 @@ export function genSnake$ (direction$, foodProxy$, firstFood, c = config) {
       .withLatestFrom(
         direction$, foodProxy$.startWith(firstFood),
         (i, direction, food) => ({direction, snake, food}))
-      .scan(crawl)
+      .scan(slither)
     )
     .map(prop('snake'))
     .share()
@@ -87,7 +87,7 @@ function moveDot ({x, y}, direction, c = config) {
   return validateMove(moveMap[direction])
 }
 
-function crawl (prev, curr) {
+function slither (prev, curr) {
   const oldSnakeHead = last(prev.snake)
   const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
   const hasCaughtFood = !equals(prev.food, curr.food)
