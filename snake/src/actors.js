@@ -28,22 +28,10 @@ export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
       .withLatestFrom(
         direction$, foodProxy$.startWith(firstFoodPosition),
         (i, direction, food) => ({direction, snake, food}))
-      .scan(crawl, {snake, food: firstFoodPosition})
+      .scan(crawl)
     )
     .map(prop('snake'))
-    .share()    // snake$ needs to be 'hot' as it will be subscribed multiple times
-
-  /*
-  ----------0------------1------------2------------3---------  interval$
-  R--------------U----------------------------L--------------  direction$
-  f1--------f1------------------------f2---------------------  foodProxy$
-                          withLatestFrom
-  -------[0,R,f1]-----[1,U,f1]-----[2,U,f2]-----[3,L,f2]-----
-                 withLatestFrom's project function 
-  -----{R,snake,f1}-{U,snake,f1}-{U,snake,f2}-{L,snake,f2}---  direction and the sanke itself are the two things required for updating the snake's position
-                              scan                             update each dot's position of the snake
-  -------snake0[]-----snake1[]-----snake2[]-----snake3[]-----  snake$
-  */
+    .share()
 }
 
 export function genFood$ (snake$, firstFoodPosition) {
