@@ -44,11 +44,9 @@ const renderText = (font, color, text, offsetY) => {
 }
 
 export const renderScene = type => {
-  if (!type) return
   const sceneText = {
     opening: ["Let's play some Snake", '🐍 Press W/A/S/D to start 🐍'],
-    victorious: ['Just Amazing!', '👉 Press W/A/S/D to restart 👈'],
-    defeated: ['Woops...', '👉 Press W/A/S/D to restart 👈']
+    ending: ['Woops...', '👉 Press W/A/S/D to restart 👈']
   }
   renderText('40px Arial', '#FF6946', sceneText[type][0], -40)
   renderText('25px fantasy', '#61ADF8', sceneText[type][1], 40)

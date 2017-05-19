@@ -1,5 +1,5 @@
 import {Observable} from 'rxjs'
-import {prop, last, equals, flip, contains, compose, multiply, length, without} from 'ramda'
+import {prop, last, equals, flip, contains, compose, multiply, length, without, not} from 'ramda'
 import {getCanvasCoords} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as c from './config'
@@ -59,6 +59,24 @@ export function genScoreboard$ (snake$, scoreValue) {
   return snake$
     .map(compose(multiply(scoreValue), length))
     .distinctUntilChanged()
+}
+
+export function genGame$ (snake$, food$, scoreboard$) {
+  return Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
+    .takeWhile(compose(not, prop('isGameOver')))
+}
+
+function addGameStatus (snake, food, scoreboard) {
+  const hasLost = isDead(snake)
+  const hasWon = !food
+  const isGameOver = hasLost || hasWon
+  return {snake, food, scoreboard, isGameOver}
+}
+
+function isDead (snake) {
+  const snakeHead = last(snake)
+  const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
+  return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
 function nextPosition (snake) {

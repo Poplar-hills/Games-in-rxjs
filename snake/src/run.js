@@ -1,8 +1,7 @@
 import {Observable, Subject} from 'rxjs'
-import {compose, prop, not, last} from 'ramda'
 import {randomBetween, collide} from './utils'
 import {renderGame, renderScene} from './renderer'
-import {genDirection$, genSnake$, genFood$, genScoreboard$} from './actors'
+import {genDirection$, genSnake$, genFood$, genScoreboard$, genGame$} from './actors'
 import * as c from './config'
 
 export default function run () {
@@ -13,12 +12,11 @@ export default function run () {
   const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
   const food$ = genFood$(snake$, firstFoodPosition)
   const scoreboard$ = genScoreboard$(snake$, c.score_value)
-  const game$ = Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
-    .do(compose(renderScene, prop('status')))   // render victorious / defeated scene
-    .takeWhile(compose(not, prop('status')))
-  
+  const game$ = genGame$(snake$, food$, scoreboard$)
+
   const foodSub = food$.subscribe(food => foodProxy$.next(food))  // feed back each value of food$ into foodProxy$ to make snake$
   const gameSub = game$.subscribe(renderGame, null, () => {
+    renderScene('ending')
     cleanUp(foodSub, gameSub)
     run()
   })
@@ -31,19 +29,6 @@ function randomPosition () {
     x: genCoord(c.w),
     y: genCoord(c.h),
   }
-}
-
-function addGameStatus (snake, food, scoreboard) {
-  let status = ''
-  if (isDead(snake)) status = 'defeated'
-  if (!food) status = 'victorious'        // when there's no space for the next food
-  return {snake, food, scoreboard, status}
-}
-
-function isDead (snake) {
-  const snakeHead = last(snake)
-  const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
-  return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
 function cleanUp (...subscriptions) {
