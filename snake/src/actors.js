@@ -2,43 +2,40 @@ import {Observable} from 'rxjs'
 import {prop, last, equals, flip, contains, compose, multiply, length, without, not} from 'ramda'
 import {getCanvasCoords} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
-import * as c from './config'
+import * as config from './config'
 
-const dot_r = c.dot_size / 2
 const containedBy = flip(contains)
-const circulateX = circulateMove(dot_r, 0, c.w)
-const circulateY = circulateMove(dot_r, 0, c.h)
 
-export function genDirection$ (keypress$, initDirection) {
+export function genDirection$ (keypress$, initDirection, c = config) {
   return keypress$
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
-      const inSuccession = (...arr) => [prev, curr].every(containedBy(arr))
+      const inSuccession = (...arr) => [prev, curr].every(containedBy(arr)) // TODO: rename arr -> keys
       return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
     }, initDirection)
     .distinctUntilChanged()
 }
 
-export function genSnake$ (direction$, foodProxy$, firstFoodPosition) {
-  return Observable.range(1, c.init_length)
+export function genSnake$ (direction$, foodProxy$, firstFood, c = config, scheduler) {
+  return Observable.range(0, c.init_length)
     .map(i => ({x: c.w / 2 + i * c.dot_size, y: c.h / 2}))
     .toArray()
-    .mergeMap(snake => Observable.interval(c.move_speed)
+    .mergeMap(snake => Observable.interval(c.move_speed, scheduler)
       .withLatestFrom(
-        direction$, foodProxy$.startWith(firstFoodPosition),
-        (i, direction, food) => ({direction, snake, food}))
-      .scan(crawl)
+        direction$, foodProxy$.startWith(firstFood),
+        (i, direction, food) => ({i, direction, snake, food}))
+      .scan(slither(c))
     )
     .map(prop('snake'))
     .share()
 }
 
-export function genFood$ (snake$, firstFoodPosition) {
+export function genFood$ (snake$, firstFood) {
   return snake$
     .scan((prevFood, snake) => {
       return collide(prevFood, last(snake)) ? nextPosition(snake) : prevFood
-    }, firstFoodPosition)
+    }, firstFood)
     .distinctUntilChanged()
     .share()
 }
@@ -67,7 +64,7 @@ function isDead (snake) {
   return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
-function nextPosition (snake) {
+function nextPosition (snake, c = config) {
   const canvasCoords = getCanvasCoords(c.w, c.h, c.dot_size)
   const snakeCoords = snake.map(dot => `${dot.x},${dot.y}`)
   const validCoords = without(snakeCoords, canvasCoords)
@@ -76,25 +73,34 @@ function nextPosition (snake) {
     : null  // when there's no space for the next food -> the player has won
 }
 
-function moveDot ({x, y}, direction) {
-  const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
-  const moveMap = {
-    [c.key_up]:    {x, y: y - c.dot_size},
-    [c.key_left]:  {x: x - c.dot_size, y},
-    [c.key_down]:  {x, y: y + c.dot_size},
-    [c.key_right]: {x: x + c.dot_size, y}
+function moveDot (c) {
+  const dot_r = c.dot_size / 2
+  const circulateX = circulateMove(dot_r, 0, c.w)
+  const circulateY = circulateMove(dot_r, 0, c.h)
+  return ({x, y}, direction) => {
+    const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
+    const moveMap = {
+      [c.key_up]:    {x, y: y - c.dot_size},
+      [c.key_left]:  {x: x - c.dot_size, y},
+      [c.key_down]:  {x, y: y + c.dot_size},
+      [c.key_right]: {x: x + c.dot_size, y}
+    }
+    return validateMove(moveMap[direction])
   }
-  return validateMove(moveMap[direction])
 }
 
-function crawl (prev, curr) {
-  const oldSnakeHead = last(prev.snake)
-  const newSnakeHead = moveDot(oldSnakeHead, curr.direction)
-  const hasCaughtFood = !equals(prev.food, curr.food)
-  const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
-  return {
-    snake: newSnakeBody.concat(newSnakeHead),
-    direction: curr.direction,
-    food: curr.food
+function slither (c) {
+  const moveHead = moveDot(c)
+  return (prev, curr) => {
+    const oldSnakeHead = last(prev.snake)
+    const newSnakeHead = moveHead(oldSnakeHead, curr.direction)
+    const hasCaughtFood = !equals(prev.food, curr.food)   // not equal means the previous food has been eaten
+    const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+    return {
+      snake: newSnakeBody.concat(newSnakeHead),
+      direction: curr.direction,
+      food: curr.food,
+      i: curr.i
+    }
   }
 }
