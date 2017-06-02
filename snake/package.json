@@ -24,7 +24,6 @@
     "babelify": "^7.3.0",
     "browserify": "^14.1.0",
     "concurrently": "^3.4.0",
-    "jsdom": "^10.1.0",
     "stylus": "^0.54.5",
     "watchify": "^3.9.0"
   },
