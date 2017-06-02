@@ -11,7 +11,7 @@ export function genDirection$ (keypress$, initDirection, c = config) {
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
-      const inSuccession = (...arr) => [prev, curr].every(containedBy(arr)) // TODO: rename arr -> keys
+      const inSuccession = (...keys) => [prev, curr].every(containedBy(keys))
       return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
     }, initDirection)
     .distinctUntilChanged()
@@ -24,7 +24,7 @@ export function genSnake$ (direction$, foodProxy$, firstFood, c = config, schedu
     .mergeMap(snake => Observable.interval(c.move_speed, scheduler)
       .withLatestFrom(
         direction$, foodProxy$.startWith(firstFood),
-        (i, direction, food) => ({i, direction, snake, food}))
+        (i, direction, food) => ({direction, snake, food}))
       .scan(slither(c))
     )
     .map(prop('snake'))
@@ -92,15 +92,14 @@ function moveDot (c) {
 function slither (c) {
   const moveHead = moveDot(c)
   return (prev, curr) => {
-    const oldSnakeHead = last(prev.snake)
-    const newSnakeHead = moveHead(oldSnakeHead, curr.direction)
+    const prevSnakeHead = last(prev.snake)
+    const currSnakeHead = moveHead(prevSnakeHead, curr.direction)
     const hasCaughtFood = !equals(prev.food, curr.food)   // not equal means the previous food has been eaten
-    const newSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+    const currSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
     return {
-      snake: newSnakeBody.concat(newSnakeHead),
+      snake: currSnakeBody.concat(currSnakeHead),
       direction: curr.direction,
-      food: curr.food,
-      i: curr.i
+      food: curr.food
     }
   }
 }
