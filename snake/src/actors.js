@@ -47,8 +47,9 @@ export function genScoreboard$ (snake$, scoreValue) {
 }
 
 export function genGame$ (snake$, food$, scoreboard$) {
-  return Observable.combineLatest(snake$, food$, scoreboard$, addGameStatus)
+  return snake$.withLatestFrom(food$, scoreboard$, addGameStatus)
     .takeWhile(compose(not, prop('isGameOver')))
+    .do(console.log)
 }
 
 function addGameStatus (snake, food, scoreboard) {
