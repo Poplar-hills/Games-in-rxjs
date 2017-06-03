@@ -42,7 +42,7 @@ const testData = [
     snake:      '--a--b--c--',
     food:       'f----g-----',
     scoreboard: 's----------',
-    expected:   '--i--|',
+    expected:   '--i--j--|',
     snakeValues: {
       a: [{x: 1, y: 1}],
       b: [{x: 2, y: 1}],
