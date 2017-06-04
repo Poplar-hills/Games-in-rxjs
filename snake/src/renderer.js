@@ -8,9 +8,9 @@ const dot_r = c.dot_size / 2
 canvas.width = c.w
 canvas.height = c.h
 
-const renderDot = (color, radius = dot_r) => ({x, y}) => {
+const renderDot = (color) => ({x, y}) => {
   ctx.beginPath()
-  ctx.arc(x, y, radius, 0, Math.PI * 2)
+  ctx.arc(x, y, dot_r, 0, Math.PI * 2)
   ctx.fillStyle = color
   ctx.fill()
 }
@@ -19,7 +19,7 @@ const renderSnake = snake => {
   snake.forEach(renderDot('orange'))
 }
 
-const renderFood = renderDot('#A0C800', dot_r)
+const renderFood = renderDot('#A0C800')
 
 const renderScoreboard = score => {
   scoreboard.innerText = score
