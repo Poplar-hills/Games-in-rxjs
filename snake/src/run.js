@@ -1,16 +1,16 @@
 import {Observable, Subject} from 'rxjs'
-import {randomBetween, collide} from './utils'
+import {randomBetween} from './utils'
 import {renderGame, renderScene} from './renderer'
 import {genDirection$, genSnake$, genFood$, genScoreboard$, genGame$} from './actors'
 import * as c from './config'
 
 export default function run () {
-  const firstFoodPosition = randomPosition()
+  const firstFood = randomPosition()
   const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
   const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.move_speed)
   const direction$ = genDirection$(keypress$, c.init_direction)
-  const snake$ = genSnake$(direction$, foodProxy$, firstFoodPosition)
-  const food$ = genFood$(snake$, firstFoodPosition)
+  const snake$ = genSnake$(direction$, foodProxy$, firstFood)
+  const food$ = genFood$(snake$, firstFood)
   const scoreboard$ = genScoreboard$(snake$, c.score_value)
   const game$ = genGame$(snake$, food$, scoreboard$)
 
@@ -27,7 +27,7 @@ function randomPosition () {
   const genCoord = max => randomBetween(dot_r, max - dot_r, c.dot_size)
   return {
     x: genCoord(c.w),
-    y: genCoord(c.h),
+    y: genCoord(c.h)
   }
 }
 

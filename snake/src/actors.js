@@ -70,7 +70,7 @@ function nextPosition (snake, c = config) {
   const validCoords = without(snakeCoords, canvasCoords)
   return validCoords.length !== 0
     ? toCoordObj(randomFrom(validCoords))
-    : null  // when there's no space for the next food -> the player has won
+    : null  // when there's no space for the next food, namely, the player has won
 }
 
 function moveDot (c) {
