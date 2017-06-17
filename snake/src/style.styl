@@ -1,5 +1,5 @@
 $s = {
-  scoreboard_d: 60px
+  scoreboard_diameter: 60px
 }
 
 $c = {
@@ -21,17 +21,16 @@ html, body
   position: relative
 
 #game-canvas
-  position: absolute
-  top: "calc(%s / 1.3)" % $s.scoreboard_d
-  right: @top
+  display: block
   background-color: $c.canvas
   border: solid 1px $c.border
+  margin: 0 auto
 
 #scoreboard
-  position: absolute
-  top: 0
-  right: @top
-  width: $s.scoreboard_d
+  position: relative
+  top: 15px
+  left: calc(50% + 290px)
+  width: $s.scoreboard_diameter
   height: @width
   line-height: @width
   text-align: center
