@@ -96,20 +96,15 @@ function moveDot (c) {
 
 function slither (c) {
   const moveHead = moveDot(c)
-  return (prev, curr) => {
+  return (prev, curr) => {  // as food$ reacts to snake$, new emits of food$ always come in here one tick later
     const prevSnakeHead = last(prev.snake)
     const currSnakeHead = moveHead(prevSnakeHead, curr.direction)
-    const hasReachedFood = collide(currSnakeHead, prev.food)  // 
-    const hasEatenFood = prev.food !== curr.food
-
-    if (hasReachedFood) {
-      currSnakeHead.color = prev.food.color
-    }
-
+    const hasReachedFood = collide(currSnakeHead, prev.food)  // the snake's head overlaps the food
+    const hasEatenFood = prev.food !== curr.food       // this happens one tick after the snake reachs the food
     const currSnakeBody = hasEatenFood ? prev.snake : prev.snake.slice(1)
-    if (hasEatenFood) {
-      currSnakeBody[currSnakeBody.length - 1].color = prev.food.color  // set new color to the sanke head
-    }
+    const colorizeByFood = dot => { dot.color = prev.food.color }
+    if (hasReachedFood) colorizeByFood(currSnakeHead)
+    if (hasEatenFood) colorizeByFood(last(currSnakeBody))  // set new color to the sanke head
     return {
       snake: currSnakeBody.concat(currSnakeHead),
       direction: curr.direction,
