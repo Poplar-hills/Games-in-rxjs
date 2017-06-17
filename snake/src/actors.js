@@ -11,8 +11,9 @@ export function genDirection$ (keypress$, initDirection, c = config) {
     .map(prop('keyCode'))
     .filter(containedBy([c.key_up, c.key_down, c.key_left, c.key_right]))
     .scan((prev, curr) => {
-      const inSuccession = (...keys) => [prev, curr].every(containedBy(keys))
-      return (inSuccession(c.key_left, c.key_right) || inSuccession(c.key_up, c.key_down)) ? prev : curr
+      const inSeries = (...keys) => [prev, curr].every(containedBy(keys))
+      const invalidPress = inSeries(c.key_left, c.key_right) || inSeries(c.key_up, c.key_down)
+      return invalidPress ? prev : curr
     }, initDirection)
     .distinctUntilChanged()
 }
