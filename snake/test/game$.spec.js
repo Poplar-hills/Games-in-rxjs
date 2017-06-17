@@ -10,28 +10,28 @@ const testData = [
     scoreboard: 's----------',
     expected:   '--i--j--k--',
     snakeValues: {
-      a: [{x: 1, y: 1}],
-      b: [{x: 2, y: 1}],
-      c: [{x: 3, y: 1}]
+      a: [{x: 1, y: 1, color: ''}],
+      b: [{x: 2, y: 1, color: ''}],
+      c: [{x: 3, y: 1, color: ''}]
     },
-    foodValues: {f: {x: 0, y: 0}},
+    foodValues: {f: {x: 0, y: 0, color: ''}},
     scoreboardValues: {s: 5},
     expectedValues: {
       i: {
-        snake: [{x: 1, y: 1}],
-        food: {x: 0, y: 0},
+        snake: [{x: 1, y: 1, color: ''}],
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       },
       j: {
-        snake: [{x: 2, y: 1}],
-        food: {x: 0, y: 0},
+        snake: [{x: 2, y: 1, color: ''}],
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       },
       k: {
-        snake: [{x: 3, y: 1}],
-        food: {x: 0, y: 0},
+        snake: [{x: 3, y: 1, color: ''}],
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       }
@@ -44,25 +44,25 @@ const testData = [
     scoreboard: 's----------',
     expected:   '--i--j--|',
     snakeValues: {
-      a: [{x: 1, y: 1}],
-      b: [{x: 2, y: 1}],
-      c: [{x: 3, y: 1}]
+      a: [{x: 1, y: 1, color: ''}],
+      b: [{x: 2, y: 1, color: ''}],
+      c: [{x: 3, y: 1, color: ''}]
     },
     foodValues: {
-      f: {x: 0, y: 0},
+      f: {x: 0, y: 0, color: ''},
       g: null
     },
     scoreboardValues: {s: 5},
     expectedValues: {
       i: {
-        snake: [{x: 1, y: 1}],
-        food: {x: 0, y: 0},
+        snake: [{x: 1, y: 1, color: ''}],
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       },
       j: {
-        snake: [{x: 2, y: 1}],
-        food: {x: 0, y: 0},
+        snake: [{x: 2, y: 1, color: ''}],
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       }
@@ -75,17 +75,33 @@ const testData = [
     scoreboard: 's--------',
     expected:   '--i--|',
     snakeValues: {
-      a: [{x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 2}, {x: 2, y: 2}, {x: 1, y: 2}],
-      b: [{x: 1, y: 1}, {x: 2, y: 1}, {x: 2, y: 2}, {x: 1, y: 2}, {x: 1, y: 1}]
+      a: [
+        {x: 0, y: 1, color: ''},
+        {x: 1, y: 1, color: ''},
+        {x: 1, y: 2, color: ''},
+        {x: 2, y: 2, color: ''},
+        {x: 1, y: 2, color: ''}
+      ],
+      b: [
+        {x: 1, y: 1, color: ''},
+        {x: 2, y: 1, color: ''},
+        {x: 2, y: 2, color: ''},
+        {x: 1, y: 2, color: ''},
+        {x: 1, y: 1, color: ''}
+      ]
     },
-    foodValues: {f: {x: 0, y: 0}},
+    foodValues: {f: {x: 0, y: 0, color: ''}},
     scoreboardValues: {s: 5},
     expectedValues: {
       i: {
         snake: [
-          {x: 0, y: 1}, {x: 1, y: 1}, {x: 1, y: 2}, {x: 2, y: 2}, {x: 1, y: 2}
+          {x: 0, y: 1, color: ''},
+          {x: 1, y: 1, color: ''},
+          {x: 1, y: 2, color: ''},
+          {x: 2, y: 2, color: ''},
+          {x: 1, y: 2, color: ''}
         ],
-        food: {x: 0, y: 0},
+        food: {x: 0, y: 0, color: ''},
         scoreboard: 5,
         isGameOver: false
       }

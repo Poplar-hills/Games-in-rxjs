@@ -3,23 +3,22 @@ import * as c from './config'
 const canvas = document.querySelector('#game-canvas')
 const scoreboard = document.querySelector('#scoreboard')
 const ctx = canvas.getContext('2d')
-const dot_r = c.dot_size / 2
 
 canvas.width = c.w
 canvas.height = c.h
 
-const renderDot = (color) => ({x, y}) => {
+const renderDot = ({x, y, color}) => {
   ctx.beginPath()
-  ctx.arc(x, y, dot_r, 0, Math.PI * 2)
+  ctx.arc(x, y, c.dot_size / 2, 0, Math.PI * 2)
   ctx.fillStyle = color
   ctx.fill()
 }
 
 const renderSnake = snake => {
-  snake.forEach(renderDot('orange'))
+  snake.forEach(renderDot)
 }
 
-const renderFood = renderDot('#A0C800')
+const renderFood = renderDot
 
 const renderScoreboard = score => {
   scoreboard.innerText = score

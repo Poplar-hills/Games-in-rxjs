@@ -1,6 +1,6 @@
 import {Observable} from 'rxjs'
-import {prop, last, equals, flip, contains, compose, multiply, length, without, not} from 'ramda'
-import {getCanvasCoords} from './init'
+import {prop, last, flip, contains, compose, multiply, length, without, not, merge} from 'ramda'
+import {getCanvasCoordStrs} from './init'
 import {collide, circulateMove, randomFrom, toCoordObj} from './utils'
 import * as config from './config'
 
@@ -19,9 +19,13 @@ export function genDirection$ (keypress$, initDirection, c = config) {
 
 export function genSnake$ (direction$, foodProxy$, firstFood, c = config, scheduler) {
   return Observable.range(0, c.init_length)
-    .map(i => ({x: c.w / 2 + i * c.dot_size, y: c.h / 2}))
+    .map(i => ({
+      x: c.w / 2 + i * c.dot_size,
+      y: c.h / 2,
+      color: c.init_snake_color
+    }))
     .toArray()
-    .mergeMap(snake => Observable.interval(c.move_speed, scheduler)
+    .mergeMap(snake => Observable.interval(c.snake_speed, scheduler)
       .withLatestFrom(
         direction$, foodProxy$.startWith(firstFood),
         (i, direction, food) => ({direction, snake, food}))
@@ -33,9 +37,10 @@ export function genSnake$ (direction$, foodProxy$, firstFood, c = config, schedu
 
 export function genFood$ (snake$, firstFood) {
   return snake$
-    .scan((prevFood, snake) => {
-      return collide(prevFood, last(snake)) ? nextPosition(snake) : prevFood
-    }, firstFood)
+    .scan((prevFood, snake) => collide(prevFood, last(snake))
+      ? genNextFood(snake, prevFood.color)
+      : prevFood
+    , firstFood)
     .distinctUntilChanged()
     .share()
 }
@@ -64,21 +69,21 @@ function isDead (snake) {
   return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
 }
 
-function nextPosition (snake, c = config) {
-  const canvasCoords = getCanvasCoords(c.w, c.h, c.dot_size)
-  const snakeCoords = snake.map(dot => `${dot.x},${dot.y}`)
-  const validCoords = without(snakeCoords, canvasCoords)
-  return validCoords.length !== 0
-    ? toCoordObj(randomFrom(validCoords))
-    : null  // when there's no space for the next food, namely, the player has won
+function genNextFood (snake, prevFoodColor, c = config) {
+  const canvasCoordStrs = getCanvasCoordStrs(c.w, c.h, c.dot_size)
+  if (snake.length === canvasCoordStrs.length) return null  // when there's no space for the next food, namely, the player has won
+  const snakeCoordStrs = snake.map(dot => `${dot.x},${dot.y}`)
+  const validCoordStrs = without(snakeCoordStrs, canvasCoordStrs)
+  const nextFoodCoord = toCoordObj(randomFrom(validCoordStrs))
+  return merge(nextFoodCoord, {color: changeColor(prevFoodColor)})
 }
 
 function moveDot (c) {
   const dot_r = c.dot_size / 2
   const circulateX = circulateMove(dot_r, 0, c.w)
   const circulateY = circulateMove(dot_r, 0, c.h)
-  return ({x, y}, direction) => {
-    const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
+  return ({x, y, color}, direction) => {
+    const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y), color})
     const moveMap = {
       [c.key_up]:    {x, y: y - c.dot_size},
       [c.key_left]:  {x: x - c.dot_size, y},
@@ -94,12 +99,25 @@ function slither (c) {
   return (prev, curr) => {
     const prevSnakeHead = last(prev.snake)
     const currSnakeHead = moveHead(prevSnakeHead, curr.direction)
-    const hasCaughtFood = !equals(prev.food, curr.food)   // not equal means the previous food has been eaten
-    const currSnakeBody = hasCaughtFood ? prev.snake : prev.snake.slice(1)
+    const hasReachedFood = collide(currSnakeHead, prev.food)  // 
+    const hasEatenFood = prev.food !== curr.food
+
+    if (hasReachedFood) {
+      currSnakeHead.color = prev.food.color
+    }
+
+    const currSnakeBody = hasEatenFood ? prev.snake : prev.snake.slice(1)
+    if (hasEatenFood) {
+      currSnakeBody[currSnakeBody.length - 1].color = prev.food.color  // set new color to the sanke head
+    }
     return {
       snake: currSnakeBody.concat(currSnakeHead),
       direction: curr.direction,
       food: curr.food
     }
   }
+}
+
+function changeColor (prevFoodColor) {
+  return randomFrom(without(prevFoodColor, config.colors))
 }

@@ -1,7 +1,7 @@
 import {memoize} from 'ramda'
 import * as c from './config'
 
-export const getCanvasCoords = memoize((w, h, dot_size) => {
+export const getCanvasCoordStrs = memoize((w, h, dot_size) => {
   const calcPoint = _ => _ * dot_size + dot_size / 2
   const xCount = w / dot_size
   const yCount = h / dot_size
@@ -19,5 +19,5 @@ export const getCanvasCoords = memoize((w, h, dot_size) => {
 })
 
 export default function init () {
-  getCanvasCoords(c.w, c.y, c.dot_size)
+  getCanvasCoordStrs(c.w, c.y, c.dot_size)
 }
