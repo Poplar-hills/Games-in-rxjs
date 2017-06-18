@@ -4,7 +4,7 @@ import {genDirection$} from '../src/actors'
 
 const testData = [
   {
-    desc: 'should only emit the keycode values of W, A, S and D',
+    desc: 'should only emit keycode values W, A, S and D and nothing else',
     upstream:   '--S--T--D--B--T--W--',
     downstream: '--S-----D--------W--'
   },
@@ -14,9 +14,10 @@ const testData = [
     downstream: '--W--A-----S--D-----'
   },
   {
-    desc: 'should omit the second dircetion if it is opposite to the initial direction',
-    upstream:   '--A--S--',
-    downstream: '--D--S--'
+    desc: 'should emit an initial direction as specified',
+    initDirection: 97,  // left
+    upstream:   '----D----',
+    downstream: '----A----'
   },
   {
     desc: 'should only emit the first if two opposite directions occur in a row',
@@ -38,7 +39,7 @@ const directionValues = {W: 119, A: 97, S: 115, D: 100, T: 84, B: 66}
 testData.forEach(_ => {
   test(_.desc, t => {
     const scheduler = new TestScheduler(t.deepEqual.bind(t))
-    const initDirection = directionValues.D
+    const initDirection = _.initDirection || directionValues.D
     const keypress$ = scheduler.createHotObservable(_.upstream, keypressValues)
     const direction$ = genDirection$(keypress$, initDirection)
     scheduler.expectObservable(direction$).toBe(_.downstream, directionValues)
