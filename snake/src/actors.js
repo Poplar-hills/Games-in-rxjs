@@ -84,14 +84,15 @@ function moveDot (c) {
   const circulateX = circulateMove(dot_r, 0, c.w)
   const circulateY = circulateMove(dot_r, 0, c.h)
   return ({x, y, color}, direction) => {
-    const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y), color})
+    const validateMove = ({x, y}) => ({x: circulateX(x), y: circulateY(y)})
     const moveMap = {
       [c.key_up]:    {x, y: y - c.dot_size},
       [c.key_left]:  {x: x - c.dot_size, y},
       [c.key_down]:  {x, y: y + c.dot_size},
       [c.key_right]: {x: x + c.dot_size, y}
     }
-    return validateMove(moveMap[direction])
+    const newCoord = validateMove(moveMap[direction])
+    return merge(newCoord, {color})  // the color does not change
   }
 }
 
