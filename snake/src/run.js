@@ -8,7 +8,7 @@ import * as c from './config'
 export default function run () {
   const firstFood = genFirstFood()
   const foodProxy$ = new Subject()   // food$ and snake$ forms a circular dependency, use subject to solve
-  const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.move_speed)
+  const keypress$ = Observable.fromEvent(document, 'keypress').sampleTime(c.snake_speed)
   const direction$ = genDirection$(keypress$, c.init_direction)
   const snake$ = genSnake$(direction$, foodProxy$, firstFood)
   const food$ = genFood$(snake$, firstFood)
