@@ -18,7 +18,10 @@ export function genDirection$ (keypress$, initDirection, c = config) {
     .distinctUntilChanged()
 }
 
-export function genSnake$ (direction$, foodProxy$, firstFood, c = config, scheduler) {
+/**
+  In foodProxy$.startWith({}), {} only serves as an initial food to activate snake$, it'll be ignored in the slither function as the initial snake doesn't depend on the position of food.
+*/
+export function genSnake$ (direction$, foodProxy$, c = config, scheduler) {
   return Observable.range(0, c.init_length)
     .map(i => ({
       x: c.w / 2 + i * c.dot_size,
@@ -28,20 +31,23 @@ export function genSnake$ (direction$, foodProxy$, firstFood, c = config, schedu
     .toArray()
     .mergeMap(snake => Observable.interval(c.snake_speed, scheduler)
       .withLatestFrom(
-        direction$, foodProxy$.startWith(firstFood),
-        (i, direction, food) => ({direction, snake, food}))
-      .scan(slither(c))
-    )
+        direction$, foodProxy$.startWith({}),
+        (i, direction, food) => ({direction, snake, food, i}))
+      .scan(slither(c)))
     .map(prop('snake'))
     .share()
 }
 
-export function genFood$ (snake$, firstFood) {
-  return snake$
+export function genFood$ (snake$, c = config) {
+  const initialFood$ = snake$
+    .first()
+    .map(snake => genNextFood(snake, c.init_snake_color))
+
+  return initialFood$
+    .merge(snake$.skip(1))
     .scan((prevFood, snake) => collide(prevFood, last(snake))
       ? genNextFood(snake, prevFood.color)
-      : prevFood
-    , firstFood)
+      : prevFood)
     .distinctUntilChanged()
     .share()
 }
@@ -66,17 +72,24 @@ function addGameStatus (snake, food, scoreboard) {
 
 function isDead (snake) {
   const snakeHead = last(snake)
-  const snakeBody = snake.slice(0, snake.length - 4)  // the first 4 dots of the snake cannot be bitten by the snake head
-  return snakeBody.some(bodyDot => collide(bodyDot, snakeHead))
+  const edibleSnakeBody = snake.slice(0, snake.length - 4)  // the snake head cannot reach the first 4 dots
+  return edibleSnakeBody.some(dot => collide(dot, snakeHead))
 }
 
+/**
+  If there's no room for the next food on the canvas, food$ will emit null, and that's when the player wins.
+*/
 function genNextFood (snake, prevFoodColor, c = config) {
   const canvasCoordStrs = getCanvasCoordStrs(c.w, c.h, c.dot_size)
-  if (snake.length === canvasCoordStrs.length) return null  // when there's no space for the next food, namely, the player has won
+  if (snake.length === canvasCoordStrs.length) return null
   const snakeCoordStrs = snake.map(dot => `${dot.x},${dot.y}`)
   const validCoordStrs = without(snakeCoordStrs, canvasCoordStrs)
   const nextFoodCoord = toCoordObj(randomFrom(validCoordStrs))
   return merge(nextFoodCoord, {color: changeColor(prevFoodColor)})
+}
+
+function changeColor (prevFoodColor) {
+  return randomFrom(without(prevFoodColor, config.colors))
 }
 
 function moveDot (c) {
@@ -96,25 +109,32 @@ function moveDot (c) {
   }
 }
 
+/**
+  As food$ reacts to snake$, food$ emits slightly later than $snake, and $snake emits a new value after the execution of this slither function, so the new food can only be accessed in the next execution of slither and that's when prev.food !== curr.food happens.
+*/
 function slither (c) {
   const moveHead = moveDot(c)
-  return (prev, curr) => {  // as food$ reacts to snake$, new emits of food$ always come in here one tick later
+  return (prev, curr, i) => {
+    const setFoodColorOn = dot => { dot.color = prev.food.color }
+    const isInitialSnake = i === 0
     const prevSnakeHead = last(prev.snake)
+    const prevSnakeBody = prev.snake.slice(1)
     const currSnakeHead = moveHead(prevSnakeHead, curr.direction)
-    const hasReachedFood = collide(currSnakeHead, prev.food)  // the snake's head overlaps the food
-    const hasEatenFood = prev.food !== curr.food       // this happens one tick after the snake reachs the food
-    const currSnakeBody = hasEatenFood ? prev.snake : prev.snake.slice(1)
-    const colorizeByFood = dot => { dot.color = prev.food.color }
-    if (hasReachedFood) colorizeByFood(currSnakeHead)
-    if (hasEatenFood) colorizeByFood(last(currSnakeBody))  // set new color to the sanke head
+    let currSnakeBody = null
+
+    if (isInitialSnake) {
+      currSnakeBody = prevSnakeBody
+    } else {
+      const hasReachedFood = collide(currSnakeHead, prev.food)  // snake's head overlaps the food
+      const hasEatenFood = prev.food !== curr.food
+      if (hasReachedFood) setFoodColorOn(currSnakeHead)
+      currSnakeBody = hasEatenFood ? prev.snake : prevSnakeBody
+    }
+
     return {
       snake: currSnakeBody.concat(currSnakeHead),
       direction: curr.direction,
       food: curr.food
     }
   }
-}
-
-function changeColor (prevFoodColor) {
-  return randomFrom(without(prevFoodColor, config.colors))
 }

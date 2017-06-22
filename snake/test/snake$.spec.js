@@ -26,7 +26,7 @@ const testData = [
         {x: 50, y: 50, color: 'red'},
         {x: 60, y: 50, color: 'red'},
         {x: 70, y: 50, color: 'red'},
-        {x: 80, y: 50, color: 'red'},
+        {x: 80, y: 50, color: 'red'}
       ],
     },
     take: 1
@@ -57,30 +57,35 @@ const testData = [
   },
   {
     desc: 'should grow up by one dot after eating a piece of food',
-    firstFood: {x: 70, y: 50, color: ''},
-    foodValues: {f: {x: 0, y: 0, color: ''}},  // 'f' will be the new food when the first food is eaten
-    food:     '------------f-----',
+    foodValues: {
+      e: {x: 70, y: 50, color: ''},
+      f: {x: 0, y: 0, color: ''}    // the new food when the first food is eaten
+    },
+    food:     'e--------f--------',
     expected: '----a---b---c---(d|)',
     values: {
       a: [{x: 50, y: 50, color: ''}, {x: 60, y: 50, color: ''}],
       b: [{x: 60, y: 50, color: ''}, {x: 70, y: 50, color: ''}],
       c: [{x: 60, y: 50, color: ''}, {x: 70, y: 50, color: ''}, {x: 80, y: 50, color: ''}],
-      d: [{x: 70, y: 50, color: ''}, {x: 80, y: 50, color: ''}, {x: 90, y: 50, color: ''}],
+      d: [{x: 70, y: 50, color: ''}, {x: 80, y: 50, color: ''}, {x: 90, y: 50, color: ''}]
     },
     take: 4
   },
   {
     desc: 'should start to change color after eating a piece of food',
     config: {init_snake_color: 'red'},
-    firstFood: {x: 70, y: 50, color: 'blue'},
-    foodValues: {f: {x: 0, y: 0, color: ''}},  // 'f' will be the new food when the first food is eaten
-    food:     '------------f-----',
+    foodValues: {
+      f: {x: 80, y: 50, color: 'blue'},
+      g: {x: 0, y: 0, color: ''}    // the new food when the first food is eaten
+    },
+    food:     'f------------g----',
     expected: '----a---b---c---(d|)',
     values: {
       a: [{x: 50, y: 50, color: 'red'}, {x: 60, y: 50, color: 'red'}],
-      b: [{x: 60, y: 50, color: 'red'}, {x: 70, y: 50, color: 'blue'}],
-      c: [{x: 60, y: 50, color: 'red'}, {x: 70, y: 50, color: 'blue'}, {x: 80, y: 50, color: 'blue'}],
-      d: [{x: 70, y: 50, color: 'blue'}, {x: 80, y: 50, color: 'blue'}, {x: 90, y: 50, color: 'blue'}],
+      b: [{x: 60, y: 50, color: 'red'}, {x: 70, y: 50, color: 'red'}],
+      c: [{x: 70, y: 50, color: 'red'}, {x: 80, y: 50, color: 'blue'}],
+      d: [{x: 70, y: 50, color: 'red'}, {x: 80, y: 50, color: 'blue'}, {x: 90, y: 50, color: 'blue'}],
+      e: [{x: 80, y: 50, color: 'blue'}, {x: 90, y: 50, color: 'blue'}, {x: 100, y: 50, color: 'blue'}]
     },
     take: 4
   }
@@ -101,9 +106,8 @@ testData.forEach(_ => {
     const scheduler = new TestScheduler(t.deepEqual.bind(t))
     const dircetion$ = scheduler.createHotObservable(_.direction || 'D-----------', keypressValues)
     const foodProxy$ = scheduler.createHotObservable(_.food || '------------', _.foodValues)
-    const firstFood = _.firstFood || {x: 0, y: 0, color: ''}
     const config = Object.assign({}, defaultConfig, baseConfig, _.config)
-    const snake$ = genSnake$(dircetion$, foodProxy$, firstFood, config, scheduler).take(_.take)
+    const snake$ = genSnake$(dircetion$, foodProxy$, config, scheduler).take(_.take)
     scheduler.expectObservable(snake$).toBe(_.expected, _.values)
     scheduler.flush()
   })  
