@@ -7,7 +7,7 @@ Simple games that:
 ## Format for Commit Messages
 Use [Semantic Commits](https://kapeli.com/cheat_sheets/Semantic_Commits.docset/Contents/Resources/Documents/index#//dash_ref_More%20Examples/Entry/feat/0) convention along with the following Emojis:
 - 🔧 : chore
-- 📋:: docs
+- 📋 : docs
 - ✨ : feat
 - 🐛 : fix 
 - 🚀 : refactor
