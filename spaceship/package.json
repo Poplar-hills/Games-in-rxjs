@@ -7,5 +7,14 @@
     "test": "npm test"
   },
   "author": "Poplar_hills",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ramda": "^0.24.1",
+    "rxjs": "^5.4.1"
+  },
+  "devDependencies": {
+    "ava": "^0.19.1",
+    "stylus": "^0.54.5",
+    "webpack": "^3.0.0"
+  }
 }
